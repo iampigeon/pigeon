@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package proto;
+
+message Message {
+    string id       = 1;
+    bytes content   = 2;
+    string endpoint = 3;
+}
+
+message Error {
+    int32 code     = 1;
+    string message = 2;
+}
+
+service SchedulerService {
+    rpc Put(PutRequest) returns (PutResponse) {}
+    rpc Get(GetRequest) returns (GetResponse) {}
+    rpc Update(UpdateRequest) returns (UpdateResponse) {}
+}
+
+message PutRequest {
+    string id       = 1;
+    bytes content   = 2;
+    string endpoint = 3;
+}
+
+message PutResponse {
+    Error error = 1;
+}
+
+message GetRequest {
+    string id = 1;
+}
+
+message GetResponse {
+    Message message = 1;
+    Error error     = 2;
+}
+
+message UpdateRequest {
+    string id        = 1;
+    bytes content   = 2;
+}
+
+message UpdateResponse {
+    Error error = 1;
+}
