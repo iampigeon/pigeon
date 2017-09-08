@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"time"
 
@@ -26,13 +27,14 @@ func main() {
 	flag.Parse()
 
 	addr := fmt.Sprintf("%s:%d", *host, *port)
-
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	s := grpc.NewServer()
+
+	log.Printf("Starting server at %s redis_url: %s redis_db: %d database: %s\n", addr, *redisURL, *redisDatabase, *dbfile)
 
 	proto.RegisterSchedulerServiceServer(s, schedulersvc.New(scheduler.StorageConfig{
 		BoltDatabase:     *dbfile,
@@ -44,6 +46,6 @@ func main() {
 	reflection.Register(s)
 
 	if err := s.Serve(lis); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }
