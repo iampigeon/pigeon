@@ -87,8 +87,12 @@ func (pq *priorityQueue) Peek() *ulid.ULID {
 
 	idStr, err := redis.String(scripts["peek"].Do(conn))
 	if err != nil {
+		if err == redis.ErrNil {
+			return nil
+		}
 		panic(err)
 	}
+
 	id, err := ulid.Parse(idStr)
 	if err != nil {
 		panic(err)
