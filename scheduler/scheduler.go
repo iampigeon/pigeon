@@ -1,9 +1,8 @@
 package scheduler
 
 import (
-	"bytes"
-	"fmt"
-	"net/http"
+	"context"
+	"log"
 	"os"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/gogo/protobuf/proto"
 	"github.com/oklog/ulid"
+	"google.golang.org/grpc"
 )
 
 // TODO(ja): remove this struct.
@@ -187,9 +187,27 @@ func (s *service) run() {
 func (s *service) send(id ulid.ULID) {
 	msg, err := s.Get(id)
 	if err != nil {
-		fmt.Println(err)
+		log.Printf("Error: could not get message %s, %v", id, err)
 		return
 	}
 
-	http.Post(string(msg.Endpoint), "text/plain", bytes.NewReader(msg.Content))
+	// TODO(ja): use secure connections
+	conn, err := grpc.Dial(string(msg.Endpoint), grpc.WithInsecure())
+	if err != nil {
+		log.Printf("Error: could not connect to backend at %s, %v", msg.Endpoint, err)
+		return
+	}
+	defer conn.Close()
+
+	client := pb.NewBackendServiceClient(conn)
+	// TODO(ja): handle cancellation.
+	resp, err := client.Deliver(context.Background(), &pb.DeliverRequest{msg.Content})
+	if err != nil {
+		log.Printf("Error: could not deliver message %s, %v", msg.ID, err)
+		return
+	}
+	if resp.Error != nil {
+		log.Printf("Error: failed to deliver message %s, %v", msg.ID, resp.Error.Message)
+		return
+	}
 }
