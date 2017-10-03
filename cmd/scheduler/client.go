@@ -6,6 +6,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"time"
@@ -83,27 +84,26 @@ func put(sc proto.SchedulerServiceClient, args []string) {
 
 	content := fs.String("c", "", "content of the message")
 	delay := fs.Duration("d", 1*time.Second, "delay when to send the message")
+	endpoint := fs.String("a", "http://localhost:5000", "address of the backend service to handle message")
 
 	fs.Parse(args)
 
 	entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
-
 	id, err := ulid.New(
 		ulid.Timestamp(time.Now().Add(*delay)),
 		entropy,
 	)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to create message id, %v", err)
 	}
 
 	_, err = sc.Put(context.Background(), &proto.PutRequest{
 		Id:       id.String(),
 		Content:  []byte(*content),
-		Endpoint: "http://localhost:5151",
+		Endpoint: *endpoint,
 	})
-
 	if err != nil {
-		panic(err)
+		log.Fatalf("Put message failed, %v", err)
 	}
 
 	fmt.Printf("id:%s\n", id.String())

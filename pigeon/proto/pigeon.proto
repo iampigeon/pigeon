@@ -14,15 +14,15 @@ message Error {
 }
 
 service BackendService {
-  rpc Aprove(AproveRequest) returns (AproveResponse) {}
+  rpc Approve(ApproveRequest) returns (ApproveResponse) {}
   rpc Deliver(DeliverRequest) returns (DeliverResponse) {}
 }
 
-message AproveRequest {
+message ApproveRequest {
   bytes content = 1;
 }
 
-message AproveResponse {
+message ApproveResponse {
   bool  valid = 1;
   Error error = 2;
 }

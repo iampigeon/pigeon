@@ -46,7 +46,7 @@ type Backend interface {
 	//
 	// If the message is valid the error will be nil, otherwise the error
 	// must be non-nil and describe why the message is invalid.
-	Aprove(content []byte) (ok bool, err error)
+	Approve(content []byte) (ok bool, err error)
 
 	// Deliver delivers the message encoded in content.
 	Deliver(content []byte) error
