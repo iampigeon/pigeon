@@ -11,6 +11,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/gogo/protobuf/proto"
 	"github.com/oklog/ulid"
+	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
 
@@ -64,7 +65,26 @@ type service struct {
 }
 
 func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr) error {
-	err := s.db.Update(func(tx *bolt.Tx) error {
+	// TODO(ja): use secure connections
+	conn, err := grpc.Dial(string(endpoint), grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	client := pb.NewBackendServiceClient(conn)
+	resp, err := client.Aprove(context.Background(), &pb.AproveRequest{content})
+	if err != nil {
+		return err
+	}
+	if !resp.Valid {
+		if resp.Error != nil {
+			return errors.Errorf("invalid message, %s", resp.Error.Message)
+		}
+		return errors.New("invalid message")
+	}
+
+	err = s.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(msgBucket)
 
 		k, merr := id.MarshalBinary()

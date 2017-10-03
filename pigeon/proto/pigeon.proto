@@ -23,7 +23,7 @@ message AproveRequest {
 }
 
 message AproveResponse {
-  bool ok = 1;
+  bool  valid = 1;
   Error error = 2;
 }
 
