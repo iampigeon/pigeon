@@ -1,0 +1,7 @@
+port: <port>
+host: <host>
+db_file: <db_file>
+redis_url: <redis_url>
+redis_idle_timeout: <redis_idle_timeout>
+redis_database: <redis_database>
+redis_max_idle: <redis_max_idle>
