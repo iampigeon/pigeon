@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 	"log"
+	"net"
 	"os"
 	"time"
 
@@ -66,6 +67,15 @@ type service struct {
 
 func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr) error {
 	// TODO(ja): use secure connections
+
+	host, port, err := net.SplitHostPort(string(endpoint))
+	if err != nil {
+		return err
+	}
+
+	endpoint = pigeon.NetAddr(net.JoinHostPort(host, port))
+	log.Println(endpoint)
+
 	conn, err := grpc.Dial(string(endpoint), grpc.WithInsecure())
 	if err != nil {
 		return err
