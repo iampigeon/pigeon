@@ -2,3 +2,6 @@
 /bin
 /**/*.pb.go
 .vscode
+.Gopkg.lock
+.Gopkg.toml
+./vendor
