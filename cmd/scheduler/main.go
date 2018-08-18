@@ -17,7 +17,7 @@ import (
 func main() {
 	port := flag.Int("port", 5050, "port of the service")
 	host := flag.String("host", "", "host of the service")
-	dbfile := flag.String("db", "massages.db", "file to store messages")
+	dbfile := flag.String("db", "messages.db", "file to store messages")
 
 	redisURL := flag.String("redis_url", "redis://127.0.0.1:6379", "URL of the redis server.")
 	redisIdleTimeout := flag.Duration("redis_idle_timeout", 5*time.Second, "Timeout for redis idle connections.")

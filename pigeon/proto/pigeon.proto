@@ -13,6 +13,28 @@ message Error {
     string message = 2;
 }
 
+service BackendService {
+  rpc Approve(ApproveRequest) returns (ApproveResponse) {}
+  rpc Deliver(DeliverRequest) returns (DeliverResponse) {}
+}
+
+message ApproveRequest {
+  bytes content = 1;
+}
+
+message ApproveResponse {
+  bool  valid = 1;
+  Error error = 2;
+}
+
+message DeliverRequest {
+  bytes content = 1;
+}
+
+message DeliverResponse {
+  Error error = 1;
+}
+
 service SchedulerService {
     rpc Put(PutRequest) returns (PutResponse) {}
     rpc Get(GetRequest) returns (GetResponse) {}

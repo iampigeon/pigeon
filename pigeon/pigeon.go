@@ -42,12 +42,12 @@ type SchedulerService interface {
 
 // Backend manages the approval and delivery of messages.
 type Backend interface {
-	// Name returns an unique identifier of the service.
-	Name() string
-
 	// Aprove validates the content of a message.
 	//
 	// If the message is valid the error will be nil, otherwise the error
 	// must be non-nil and describe why the message is invalid.
-	Aprove(content []byte) (ok bool, err error)
+	Approve(content []byte) (ok bool, err error)
+
+	// Deliver delivers the message encoded in content.
+	Deliver(content []byte) error
 }
