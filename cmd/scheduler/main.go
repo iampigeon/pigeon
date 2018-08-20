@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/WiseGrowth/pigeon/pigeon/proto"
+	"github.com/WiseGrowth/pigeon/proto"
 	"github.com/WiseGrowth/pigeon/rpc/scheduler"
 	"github.com/WiseGrowth/pigeon/scheduler"
 	"google.golang.org/grpc"
@@ -45,7 +45,11 @@ func main() {
 	}))
 	reflection.Register(s)
 
-	if err := s.Serve(lis); err != nil {
-		log.Fatal(err)
-	}
+	// if err := s.Serve(lis); err != nil {
+	// 	log.Fatal(err)
+	// } else {
+	// 	fmt.Println("Runing and ready bitches!")
+	// }
+	go s.Serve(lis)
+	fmt.Println("RUUUNIIIIING!!!!!")
 }

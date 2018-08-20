@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/WiseGrowth/pigeon"
 	"github.com/WiseGrowth/pigeon/backend"
-	"github.com/WiseGrowth/pigeon/pigeon"
 )
 
 type service struct{}

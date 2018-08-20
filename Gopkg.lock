@@ -2,20 +2,6 @@
 
 
 [[projects]]
-  branch = "master"
-  digest = "1:5a89b05afec8eb50e2f2906b02dcea568ad3dfe80c86c426c7c6219fc9c05106"
-  name = "github.com/WiseGrowth/pigeon"
-  packages = [
-    "backend",
-    "pigeon",
-    "pigeon/proto",
-    "rpc/scheduler",
-    "scheduler",
-  ]
-  pruneopts = "UT"
-  revision = "b68e01348d5b3bee3ef9008e7fa1ef8428e9f736"
-
-[[projects]]
   digest = "1:0f98f59e9a2f4070d66f0c9c39561f68fcd1dc837b22a852d28d0003aebd1b1e"
   name = "github.com/boltdb/bolt"
   packages = ["."]
@@ -169,14 +155,10 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/WiseGrowth/pigeon/backend",
-    "github.com/WiseGrowth/pigeon/pigeon",
-    "github.com/WiseGrowth/pigeon/pigeon/proto",
-    "github.com/WiseGrowth/pigeon/rpc/scheduler",
-    "github.com/WiseGrowth/pigeon/scheduler",
     "github.com/boltdb/bolt",
     "github.com/garyburd/redigo/redis",
     "github.com/gogo/protobuf/proto",
+    "github.com/golang/protobuf/proto",
     "github.com/oklog/ulid",
     "github.com/pkg/errors",
     "golang.org/x/net/context",

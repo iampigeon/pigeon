@@ -3,8 +3,8 @@ package schedulersvc
 import (
 	"golang.org/x/net/context"
 
-	"github.com/WiseGrowth/pigeon/pigeon"
-	pb "github.com/WiseGrowth/pigeon/pigeon/proto"
+	"github.com/WiseGrowth/pigeon"
+	pb "github.com/WiseGrowth/pigeon/proto"
 	"github.com/WiseGrowth/pigeon/scheduler"
 	"github.com/oklog/ulid"
 )

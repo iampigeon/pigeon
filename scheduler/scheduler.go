@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/WiseGrowth/pigeon/pigeon"
-	pb "github.com/WiseGrowth/pigeon/pigeon/proto"
+	"github.com/WiseGrowth/pigeon"
+	pb "github.com/WiseGrowth/pigeon/proto"
 	"github.com/boltdb/bolt"
 	"github.com/gogo/protobuf/proto"
 	"github.com/oklog/ulid"
