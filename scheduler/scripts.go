@@ -1,6 +1,7 @@
 package scheduler
 
 import (
+	"log"
 	"net/url"
 
 	"github.com/garyburd/redigo/redis"
@@ -56,6 +57,7 @@ type priorityQueue struct {
 }
 
 func newPriorityQueue(config StorageConfig) *priorityQueue {
+	log.Println(config)
 	pool := &redis.Pool{
 		Dial:        dial(config),
 		MaxIdle:     config.RedisMaxIdle,
@@ -106,10 +108,12 @@ func (pq *priorityQueue) Pop() *ulid.ULID {
 
 	idStr, err := redis.String(scripts["pop"].Do(conn))
 	if err != nil {
+		log.Println("BBBB")
 		panic(err)
 	}
 	id, err := ulid.Parse(idStr)
 	if err != nil {
+		log.Println("CCCC")
 		panic(err)
 	}
 	return &id
@@ -124,6 +128,7 @@ func dial(config StorageConfig) func() (redis.Conn, error) {
 
 		conn, err := redis.Dial("tcp", u.Host)
 		if err != nil {
+			log.Printf("reymonkey")
 			return nil, err
 		}
 		if _, err = conn.Do("SELECT", config.RedisDatabase); err != nil {

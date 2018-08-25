@@ -15,5 +15,7 @@ FROM golang:alpine
 COPY /bin/scheduler /
 COPY config.yml /
 WORKDIR /
+ENV REDIS_URL redis:6379
+EXPOSE 5050
 
 CMD ["./scheduler"]

@@ -1,7 +1,7 @@
 port: 5050
 host:
-db_file: massages.db
-redis_url: redis://127.0.0.1:6379
+db_file: messages.db
+redis_url: redis://redis:6379/0
 redis_idle_timeout: 5000
 redis_database: 1
 redis_max_idle: 10

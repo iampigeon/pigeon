@@ -19,7 +19,7 @@ func main() {
 	host := flag.String("host", "", "host of the service")
 	dbfile := flag.String("db", "messages.db", "file to store messages")
 
-	redisURL := flag.String("redis_url", "redis://127.0.0.1:6379", "URL of the redis server.")
+	redisURL := flag.String("redis_url", "redis://redis:6379/0", "URL of the redis server.")
 	redisIdleTimeout := flag.Duration("redis_idle_timeout", 5*time.Second, "Timeout for redis idle connections.")
 	redisDatabase := flag.Int("redis_db", 1, "Redis database to use")
 	redisMaxIdle := flag.Int("redis_max_idle", 10, "Maximum number of idle connections in the pool")
@@ -33,7 +33,6 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-
 	log.Printf("Starting server at %s redis_url: %s redis_db: %d database: %s\n", addr, *redisURL, *redisDatabase, *dbfile)
 
 	proto.RegisterSchedulerServiceServer(s, schedulersvc.New(scheduler.StorageConfig{
@@ -43,13 +42,11 @@ func main() {
 		RedisDatabase:    *redisDatabase,
 		RedisMaxIdle:     *redisMaxIdle,
 	}))
-	reflection.Register(s)
 
-	// if err := s.Serve(lis); err != nil {
-	// 	log.Fatal(err)
-	// } else {
-	// 	fmt.Println("Runing and ready bitches!")
-	// }
-	go s.Serve(lis)
-	fmt.Println("RUUUNIIIIING!!!!!")
+	reflection.Register(s)
+	if err := s.Serve(lis); err != nil {
+		log.Fatal(err)
+	} else {
+		fmt.Println("Runing and ready bitches!")
+	}
 }

@@ -34,6 +34,7 @@ type StorageConfig struct {
 func New(config StorageConfig) pigeon.SchedulerService {
 	db, err := bolt.Open(config.BoltDatabase, os.ModePerm, nil)
 	if err != nil {
+		log.Println("4444")
 		panic(err)
 	}
 
@@ -42,6 +43,7 @@ func New(config StorageConfig) pigeon.SchedulerService {
 		return berr
 	})
 	if err != nil {
+		log.Println("555")
 		panic(err)
 	}
 
@@ -78,6 +80,7 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr) err
 
 	conn, err := grpc.Dial(string(endpoint), grpc.WithInsecure())
 	if err != nil {
+		log.Println("madafaca")
 		return err
 	}
 	defer conn.Close()

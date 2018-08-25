@@ -7,3 +7,6 @@ build b:
 build-osx bosx:
 	@CGO_ENABLED=0 go generate ./...
 	@CGO_ENABLED=0 go build -i -o bin/scheduler github.com/WiseGrowth/pigeon/cmd/scheduler
+deploy d: build
+	@docker-compose build
+	@docker-compose up
