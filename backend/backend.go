@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// ListenAndServe ...
 func ListenAndServe(addr pigeon.NetAddr, backend pigeon.Backend) error {
 	lis, err := net.Listen("tcp", string(addr))
 	if err != nil {
