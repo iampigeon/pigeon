@@ -80,7 +80,6 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr) err
 
 	conn, err := grpc.Dial(string(endpoint), grpc.WithInsecure())
 	if err != nil {
-		log.Println("madafaca")
 		return err
 	}
 	defer conn.Close()
