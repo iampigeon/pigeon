@@ -11,7 +11,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/WiseGrowth/pigeon/proto"
+	"github.com/iampigeon/pigeon/proto"
 	"github.com/oklog/ulid"
 	"google.golang.org/grpc"
 )

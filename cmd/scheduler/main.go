@@ -7,9 +7,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/WiseGrowth/pigeon/proto"
-	"github.com/WiseGrowth/pigeon/rpc/scheduler"
-	"github.com/WiseGrowth/pigeon/scheduler"
+	"github.com/iampigeon/pigeon/proto"
+	"github.com/iampigeon/pigeon/rpc/scheduler"
+	"github.com/iampigeon/pigeon/scheduler"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )

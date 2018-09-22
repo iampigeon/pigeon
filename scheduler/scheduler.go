@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/WiseGrowth/pigeon"
-	pb "github.com/WiseGrowth/pigeon/proto"
 	"github.com/boltdb/bolt"
 	"github.com/gogo/protobuf/proto"
+	"github.com/iampigeon/pigeon"
+	pb "github.com/iampigeon/pigeon/proto"
 	"github.com/oklog/ulid"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -86,7 +86,7 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr) err
 	defer conn.Close()
 
 	client := pb.NewBackendServiceClient(conn)
-	resp, err := client.Approve(context.Background(), &pb.ApproveRequest{content})
+	resp, err := client.Approve(context.Background(), &pb.ApproveRequest{Content: content})
 	if err != nil {
 		return err
 	}
@@ -234,7 +234,7 @@ func (s *service) send(id ulid.ULID) {
 
 	client := pb.NewBackendServiceClient(conn)
 	// TODO(ja): handle cancellation.
-	resp, err := client.Deliver(context.Background(), &pb.DeliverRequest{msg.Content})
+	resp, err := client.Deliver(context.Background(), &pb.DeliverRequest{Content: msg.Content})
 	if err != nil {
 		log.Printf("Error: could not deliver message %s, %v", msg.ID, err)
 		return
