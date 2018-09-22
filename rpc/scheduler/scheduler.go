@@ -11,23 +11,26 @@ import (
 
 var _ pb.SchedulerServiceServer = (*Service)(nil)
 
+// Service ...
 type Service struct {
-	s pigeon.SchedulerService
+	schedulerSvc pigeon.SchedulerService
 }
 
+// New ...
 func New(config scheduler.StorageConfig) *Service {
 	return &Service{
-		s: scheduler.New(config),
+		schedulerSvc: scheduler.New(config),
 	}
 }
 
+// Put ...
 func (s *Service) Put(ctx context.Context, r *pb.PutRequest) (*pb.PutResponse, error) {
 	id, err := ulid.Parse(r.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := s.s.Put(id, r.Content, pigeon.NetAddr(r.Endpoint)); err != nil {
+	if err := s.schedulerSvc.Put(id, r.Content, pigeon.NetAddr(r.Endpoint)); err != nil {
 		return nil, err
 	}
 
@@ -39,7 +42,7 @@ func (s *Service) Get(ctx context.Context, r *pb.GetRequest) (*pb.GetResponse, e
 		return nil, err
 	}
 
-	msg, err := s.s.Get(id)
+	msg, err := s.schedulerSvc.Get(id)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +61,7 @@ func (s *Service) Update(ctx context.Context, r *pb.UpdateRequest) (*pb.UpdateRe
 		return nil, err
 	}
 
-	if err := s.s.Update(id, r.Content); err != nil {
+	if err := s.schedulerSvc.Update(id, r.Content); err != nil {
 		return nil, err
 	}
 
