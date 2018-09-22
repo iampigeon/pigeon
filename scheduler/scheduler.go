@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/WiseGrowth/pigeon"
-	pb "github.com/WiseGrowth/pigeon/proto"
 	"github.com/boltdb/bolt"
 	"github.com/gogo/protobuf/proto"
+	"github.com/iampigeon/pigeon"
+	pb "github.com/iampigeon/pigeon/proto"
 	"github.com/oklog/ulid"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"

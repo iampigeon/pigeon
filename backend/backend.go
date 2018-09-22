@@ -4,8 +4,8 @@ import (
 	"log"
 	"net"
 
-	"github.com/WiseGrowth/pigeon"
-	"github.com/WiseGrowth/pigeon/proto"
+	"github.com/iampigeon/pigeon"
+	"github.com/iampigeon/pigeon/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 )
