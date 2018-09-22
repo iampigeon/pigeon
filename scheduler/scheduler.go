@@ -86,7 +86,7 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr) err
 	defer conn.Close()
 
 	client := pb.NewBackendServiceClient(conn)
-	resp, err := client.Approve(context.Background(), &pb.ApproveRequest{content})
+	resp, err := client.Approve(context.Background(), &pb.ApproveRequest{Content: content})
 	if err != nil {
 		return err
 	}
@@ -234,7 +234,7 @@ func (s *service) send(id ulid.ULID) {
 
 	client := pb.NewBackendServiceClient(conn)
 	// TODO(ja): handle cancellation.
-	resp, err := client.Deliver(context.Background(), &pb.DeliverRequest{msg.Content})
+	resp, err := client.Deliver(context.Background(), &pb.DeliverRequest{Content: msg.Content})
 	if err != nil {
 		log.Printf("Error: could not deliver message %s, %v", msg.ID, err)
 		return
