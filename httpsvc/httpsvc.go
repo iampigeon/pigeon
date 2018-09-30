@@ -22,19 +22,6 @@ const (
 	APIKey = "12345"
 )
 
-// {
-// "data": {
-// 	"subjects": [{
-// 	"name": "max-air-temperature",
-// 	"channels": ["mqtt", "sms"]
-// 	}, {
-// 	"name": "weekly-report",
-// 	"channels": ["sms", "push"]
-// 	}]
-// },
-// "meta": {}
-// }
-
 // Subject ...
 type Subject struct {
 	Name     string   `json:"name"`
