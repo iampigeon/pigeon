@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"time"
 
+	"github.com/iampigeon/pigeon/httpsvc"
 	"github.com/iampigeon/pigeon/proto"
 	"github.com/iampigeon/pigeon/rpc/scheduler"
 	"github.com/iampigeon/pigeon/scheduler"
@@ -26,12 +28,25 @@ func main() {
 
 	flag.Parse()
 
+	// ----- Init HTTP
+	// TODO: implements recover
+	httpServer := httpsvc.NewHTTPServer()
+	log.Printf("Running server on: " + httpServer.Addr)
+
+	go func() {
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Println(err)
+			return
+		}
+	}()
+
 	addr := fmt.Sprintf("%s:%d", *host, *port)
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// ----- Init grpc
 	s := grpc.NewServer()
 	log.Printf("Starting server at %s redis_url: %s redis_db: %d database: %s\n", addr, *redisURL, *redisDatabase, *dbfile)
 
@@ -46,7 +61,5 @@ func main() {
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {
 		log.Fatal(err)
-	} else {
-		fmt.Println("Runing and ready bitches!")
 	}
 }
