@@ -1,4 +1,4 @@
-port: 5050
+port: 9001
 host:
 db_file: messages.db
 redis_url: redis://redis:6379/0
