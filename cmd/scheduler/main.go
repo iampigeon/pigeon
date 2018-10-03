@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	port := flag.Int("port", 5050, "port of the service")
+	port := flag.Int("port", 9001, "port of the service")
 	host := flag.String("host", "", "host of the service")
 	dbfile := flag.String("db", "messages.db", "file to store messages")
 
