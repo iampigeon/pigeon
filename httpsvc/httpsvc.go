@@ -115,6 +115,7 @@ type postMessageContext struct {
 //
 // GET /api/v1/subjects
 // POST /api/v1/messages
+// GET /api/v1/messages/:id/status
 //
 func NewHTTPServer(database *db.Datastore) *http.Server {
 	router := httprouter.New()
