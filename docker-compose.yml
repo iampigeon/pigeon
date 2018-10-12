@@ -18,3 +18,8 @@ services:
     build: ../pigeon-mqtt
     ports:
       - 9010:9010
+
+  pigeon-http:
+    build: ../pigeon-http
+    ports:
+      - 9020:9020
