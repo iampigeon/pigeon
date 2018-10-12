@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/iampigeon/pigeon/db"
 	"github.com/iampigeon/pigeon/httpsvc"
 	"github.com/iampigeon/pigeon/proto"
 	"github.com/iampigeon/pigeon/rpc/scheduler"
@@ -28,9 +29,15 @@ func main() {
 
 	flag.Parse()
 
+	// ----- Init DB
+	database, err := db.NewDatastore(*dbfile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// ----- Init HTTP
 	// TODO: implements recover
-	httpServer := httpsvc.NewHTTPServer()
+	httpServer := httpsvc.NewHTTPServer(database)
 	log.Printf("Running server on: " + httpServer.Addr)
 
 	go func() {
@@ -46,12 +53,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	//stores
+	ms := &db.MessageStore{database}
+
 	// ----- Init grpc
 	s := grpc.NewServer()
 	log.Printf("Starting server at %s redis_url: %s redis_db: %d database: %s\n", addr, *redisURL, *redisDatabase, *dbfile)
-
 	proto.RegisterSchedulerServiceServer(s, schedulersvc.New(scheduler.StorageConfig{
-		BoltDatabase:     *dbfile,
+		// BoltDatabase:     *dbfile,
+		MessageStore:     ms,
 		RedisURL:         *redisURL,
 		RedisIdleTimeout: *redisIdleTimeout,
 		RedisDatabase:    *redisDatabase,
