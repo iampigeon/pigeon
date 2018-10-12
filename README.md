@@ -301,9 +301,9 @@ Define relations of subjects and channels
 - [X] Implement status behavior on message lifecycle (ca)
 - [X] Define and implements mocks struct models (ca)
 - [X] Implement mock to `GET /api/v1/subject` endpoint (ca)
-- [X] Implement `GET /api/v1/messages/:id/status` endpoint
+- [X] Implement `GET /api/v1/messages/:id/status` endpoint (ca)
 - [ ] Implement status method on pigeon-go client (mt)
-- [ ] Implement `POST /api/v1/messages/:id/cancel` endpoint
+- [ ] Implement `POST /api/v1/messages/:id/cancel` endpoint (ca)
 - [ ] Handle cancellation in scheduler.go file (ja)
 - [ ] Implement rpc route for cancel message by id (ca)
 - [ ] Implement cancel method on `pigeon-go` client (mt)
@@ -311,19 +311,19 @@ Define relations of subjects and channels
 - [X] Add `webhook` value to subject model {options: {headers}} (ca)
 - [ ] Implement 'callback_post_url' using pigeon-http service inside scheduler.go file (ca)
 - [X] Append user-channels `options` to content message by channel (ca)
-- [ ] Implement `Subjects` table on `BoltDB`
-- [ ] Implement `Subject Channels` table on `BoltDB`
-- [ ] Implement `Users` table on `BoltDB`
-- [X] Add 'data.json' on docker
+- [ ] Implement `Subjects` table on `BoltDB` (ca)
+- [ ] Implement `Subject Channels` table on `BoltDB` (ca)
+- [ ] Implement `Users` table on `BoltDB` (ca)
+- [X] Add 'data.json' on docker (ca)
 - [X] Implement `Messages` table on `BoltDB` (ca)
 - [X] Add Status on `Messages` protobuf (ca)
 - [X] Implement logic to validate and get user by x-api-key header value (ca)
-- [X] Add user_id to message protobuf and implement this in put scheduler method
+- [X] Add user_id to message protobuf and implement this in put scheduler method (ca)
 - [ ] Define error codes in backend.go file (ja)
 - [ ] Use secure connections in all grpc connections (ja)
 - [X] Add criteria model (ca)
 - [X] Add criteria examples to mock (ca)
-- [X] Implement criteria when create new message
+- [X] Implement criteria when create new message (ca)
 
 ```json
 {
