@@ -59,14 +59,18 @@ func main() {
 	// ----- Init grpc
 	s := grpc.NewServer()
 	log.Printf("Starting server at %s redis_url: %s redis_db: %d database: %s\n", addr, *redisURL, *redisDatabase, *dbfile)
-	proto.RegisterSchedulerServiceServer(s, schedulersvc.New(scheduler.StorageConfig{
+	svc, err := schedulersvc.New(scheduler.StorageConfig{
 		// BoltDatabase:     *dbfile,
 		MessageStore:     ms,
 		RedisURL:         *redisURL,
 		RedisIdleTimeout: *redisIdleTimeout,
 		RedisDatabase:    *redisDatabase,
 		RedisMaxIdle:     *redisMaxIdle,
-	}))
+	})
+	if err != nil {
+		panic(err)
+	}
+	proto.RegisterSchedulerServiceServer(s, svc)
 
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {

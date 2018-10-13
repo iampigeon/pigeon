@@ -39,6 +39,13 @@ var (
 			end
 			return result_set[1]
 		`,
+		"delete": `
+		local id = ARGV[1]
+
+		local result_set = redis.call('DEL', 'pd:ids', id)
+
+		return result_set
+		`,
 	}
 )
 
@@ -56,7 +63,7 @@ type priorityQueue struct {
 	}
 }
 
-func newPriorityQueue(config StorageConfig) *priorityQueue {
+func newPriorityQueue(config StorageConfig) (*priorityQueue, error) {
 	log.Println(config)
 	pool := &redis.Pool{
 		Dial:        dial(config),
@@ -66,57 +73,74 @@ func newPriorityQueue(config StorageConfig) *priorityQueue {
 
 	conn := pool.Get()
 	if err := conn.Err(); err != nil {
-		panic(err)
+		return nil, err
 	}
 	conn.Close()
 
-	return &priorityQueue{pool}
+	return &priorityQueue{pool}, nil
 }
 
-func (pq *priorityQueue) Push(id ulid.ULID) {
+func (pq *priorityQueue) Push(id ulid.ULID) error {
 	conn := pq.pool.Get()
 	defer conn.Close()
 
 	_, err := scripts["push"].Do(conn, id.Time(), id.String())
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
-func (pq *priorityQueue) Peek() *ulid.ULID {
+func (pq *priorityQueue) Peek() (*ulid.ULID, error) {
 	conn := pq.pool.Get()
 	defer conn.Close()
 
 	idStr, err := redis.String(scripts["peek"].Do(conn))
 	if err != nil {
-		if err == redis.ErrNil {
-			return nil
-		}
-		panic(err)
+		return nil, err
 	}
 
 	id, err := ulid.Parse(idStr)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return &id
+	return &id, nil
 }
 
-func (pq *priorityQueue) Pop() *ulid.ULID {
+func (pq *priorityQueue) Pop() (*ulid.ULID, error) {
 	conn := pq.pool.Get()
 	defer conn.Close()
 
 	idStr, err := redis.String(scripts["pop"].Do(conn))
 	if err != nil {
-		log.Println("BBBB")
-		panic(err)
+		return nil, err
 	}
+
 	id, err := ulid.Parse(idStr)
 	if err != nil {
-		log.Println("CCCC")
-		panic(err)
+		return nil, err
 	}
-	return &id
+
+	return &id, nil
+}
+
+// DeleteByID
+func (pq *priorityQueue) DeleteByID(id string) (bool, error) {
+	conn := pq.pool.Get()
+	defer conn.Close()
+
+	// TODO: check for casting
+	res, err := redis.Int(scripts["delete"].Do(conn, id))
+	if err != nil {
+		return false, err
+	}
+
+	if res == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func dial(config StorageConfig) func() (redis.Conn, error) {
@@ -145,6 +169,7 @@ func dial(config StorageConfig) func() (redis.Conn, error) {
 				return nil, err
 			}
 		}
+
 		return conn, nil
 	}
 }
