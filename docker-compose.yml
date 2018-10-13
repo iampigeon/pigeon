@@ -9,11 +9,17 @@ services:
     links:
       - redis
     ports:
-      - 5050:5050
+      - 9000:9000
+      - 9001:9001
     depends_on:
       - pigeon-mqtt
 
   pigeon-mqtt:
     build: ../pigeon-mqtt
     ports:
-      - 5151:5151
+      - 9010:9010
+
+  pigeon-http:
+    build: ../pigeon-http
+    ports:
+      - 9020:9020
