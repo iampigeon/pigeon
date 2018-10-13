@@ -6,8 +6,6 @@ message Message {
     string id       = 1;
     bytes content   = 2;
     string endpoint = 3;
-    string status = 4;
-    string subject_id = 5;
 }
 
 message Error {
@@ -47,7 +45,6 @@ message PutRequest {
     string id       = 1;
     bytes content   = 2;
     string endpoint = 3;
-    string subject_id = 4;
 }
 
 message PutResponse {

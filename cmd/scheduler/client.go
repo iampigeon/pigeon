@@ -19,7 +19,7 @@ import (
 func main() {
 	flag.Parse()
 
-	addr := "localhost:9001"
+	addr := "localhost:5050"
 
 	conn, err := grpc.Dial(addr, grpc.WithInsecure())
 	if err != nil {

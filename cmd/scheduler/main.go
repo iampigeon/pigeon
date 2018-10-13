@@ -5,11 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
 	"time"
 
-	"github.com/iampigeon/pigeon/db"
-	"github.com/iampigeon/pigeon/httpsvc"
 	"github.com/iampigeon/pigeon/proto"
 	"github.com/iampigeon/pigeon/rpc/scheduler"
 	"github.com/iampigeon/pigeon/scheduler"
@@ -18,7 +15,7 @@ import (
 )
 
 func main() {
-	port := flag.Int("port", 9001, "port of the service")
+	port := flag.Int("port", 5050, "port of the service")
 	host := flag.String("host", "", "host of the service")
 	dbfile := flag.String("db", "messages.db", "file to store messages")
 
@@ -29,39 +26,17 @@ func main() {
 
 	flag.Parse()
 
-	// ----- Init DB
-	database, err := db.NewDatastore(*dbfile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// ----- Init HTTP
-	// TODO: implements recover
-	httpServer := httpsvc.NewHTTPServer(database)
-	log.Printf("Running server on: " + httpServer.Addr)
-
-	go func() {
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Println(err)
-			return
-		}
-	}()
-
 	addr := fmt.Sprintf("%s:%d", *host, *port)
 	lis, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	//stores
-	ms := &db.MessageStore{database}
-
-	// ----- Init grpc
 	s := grpc.NewServer()
 	log.Printf("Starting server at %s redis_url: %s redis_db: %d database: %s\n", addr, *redisURL, *redisDatabase, *dbfile)
+
 	proto.RegisterSchedulerServiceServer(s, schedulersvc.New(scheduler.StorageConfig{
-		// BoltDatabase:     *dbfile,
-		MessageStore:     ms,
+		BoltDatabase:     *dbfile,
 		RedisURL:         *redisURL,
 		RedisIdleTimeout: *redisIdleTimeout,
 		RedisDatabase:    *redisDatabase,
@@ -71,5 +46,7 @@ func main() {
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {
 		log.Fatal(err)
+	} else {
+		fmt.Println("Runing and ready bitches!")
 	}
 }
