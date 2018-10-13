@@ -28,12 +28,17 @@ type StorageConfig struct {
 	MessageStore *db.MessageStore
 }
 
-// New builds a new pigeon.Store backed by bolt DB.
+// NewStoreBackend builds a new pigeon.Store backed by bolt DB.
 //
 // In case of any error it panics.
-func New(config StorageConfig) pigeon.SchedulerService {
+func NewStoreBackend(config StorageConfig) (pigeon.SchedulerService, error) {
+	pq, err := newPriorityQueue(config)
+	if err != nil {
+		return nil, err
+	}
+
 	s := &service{
-		pq:  newPriorityQueue(config),
+		pq:  pq,
 		idc: make(chan ulid.ULID),
 
 		ms: config.MessageStore,
@@ -41,7 +46,7 @@ func New(config StorageConfig) pigeon.SchedulerService {
 
 	go s.run()
 
-	return s
+	return s, nil
 }
 
 var msgBucket = []byte("messages")
@@ -114,6 +119,9 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 	return nil
 }
 
+func (s *service) deleteByID(id string) error {
+}
+
 func (s *service) Get(id ulid.ULID) (*pigeon.Message, error) {
 	msg, err := s.ms.GetMessage(id)
 	if err != nil {
@@ -142,7 +150,11 @@ func (s *service) run() {
 	for {
 		var tick <-chan time.Time
 
-		top := pq.Peek()
+		top, err := pq.Peek()
+		if err != nil {
+			log.Println(err)
+			return
+		}
 		if top != nil {
 			if t := top.Time(); t < next || next == 0 {
 				var delay int64
@@ -171,7 +183,11 @@ func (s *service) run() {
 
 		select {
 		case <-tick:
-			if id := pq.Pop(); id != nil {
+			id, err := pq.Pop()
+			if err != nil {
+				log.Println(err)
+			}
+			if id != nil {
 				go s.send(*id)
 			}
 			next = 0

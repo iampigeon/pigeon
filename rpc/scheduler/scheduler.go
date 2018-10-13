@@ -17,10 +17,14 @@ type Service struct {
 }
 
 // New ...
-func New(config scheduler.StorageConfig) *Service {
-	return &Service{
-		schedulerSvc: scheduler.New(config),
+func New(config scheduler.StorageConfig) (*Service, error) {
+	sSvc, err := scheduler.NewStoreBackend(config)
+	if err != nil {
+		return nil, err
 	}
+	return &Service{
+		schedulerSvc: sSvc,
+	}, nil
 }
 
 // Put ...
@@ -36,6 +40,21 @@ func (s *Service) Put(ctx context.Context, r *pb.PutRequest) (*pb.PutResponse, e
 
 	return &pb.PutResponse{}, nil
 }
+
+func (s *Service) DeleteByID(ctx context.Context, r *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+	_, err := ulid.Parse(r.Id)
+	if err != nil { // (Coke, read this): We only need to check if is a valid ulid
+		return nil, err
+	}
+
+	if err := s.schedulerSvc.DeleteByID(id); err != nil {
+		return nil, err
+	}
+
+	return &pb.DeleteResponse{}, nil
+}
+
+// Get ...
 func (s *Service) Get(ctx context.Context, r *pb.GetRequest) (*pb.GetResponse, error) {
 	id, err := ulid.Parse(r.Id)
 	if err != nil {
@@ -56,6 +75,8 @@ func (s *Service) Get(ctx context.Context, r *pb.GetRequest) (*pb.GetResponse, e
 		},
 	}, nil
 }
+
+// Update ...
 func (s *Service) Update(ctx context.Context, r *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	id, err := ulid.Parse(r.Id)
 	if err != nil {

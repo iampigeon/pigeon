@@ -57,12 +57,12 @@ func get(sc proto.SchedulerServiceClient, args []string) {
 		Id: args[0],
 	})
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	id, err := ulid.Parse(resp.Message.Id)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	t := time.Unix(
@@ -77,6 +77,8 @@ func get(sc proto.SchedulerServiceClient, args []string) {
 		resp.Message.Endpoint,
 		t.Format(time.RFC3339),
 	)
+
+	return nil
 }
 
 func put(sc proto.SchedulerServiceClient, args []string) {
