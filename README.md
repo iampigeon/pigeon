@@ -45,9 +45,27 @@ Central notification service FTW.
   "message": {
     "subject_name": "max-air-temperature",
     "channels": {
+      "mqtt": {
+        "mqtt_payload": {
+          "foo": "bar",
+          "skt": "uno"
+        },
+        "text": "some-sms-text"
+      },
       "sms": {
         "phone": "+56912345678",
         "text": "some-sms-text"
+      },
+      "mandrill": {
+        "text": "some-sms-text",
+        "token": "secure-api",
+        "email": "cristobal@iampigeon.com",
+        "type": "???",
+        "from_email": "support@iampigeon.com",
+        "from_name": "support",
+        "subject": "some-text",
+        "html": "some-html",
+        "text": "some-text",
       },
     }
   }
@@ -230,6 +248,30 @@ Define relations of subjects and channels
         }
       }
     }]
+  }, {
+    "id": "s3",
+    "user_id": "u1",
+    "name": "wisebot-service-update",
+    "channels": [{
+      "id": "uc4",
+      "channel_id": "c6",
+      "criteria_id": "t3",
+      "callback_post_url": null,
+      "options": {
+        "wg_url": "https://wg-api-production.wisegrowth.app",
+        "wg_api_key": "secure_api_key"
+      }
+    }, {
+      "id": "uc5",
+      "channel_id": "c1",
+      "criteria_id": "t4",
+      "callback_post_url": null,
+      "options": {
+        "mqtt_topic": "/wisebots/:id/service-update",
+        "aws_key": "some-key",
+        "aws_secret_key": "some-secret-key"
+      }
+    }]
   }]
 }
 ```
@@ -302,7 +344,7 @@ Define relations of subjects and channels
 - [X] Define and implements mocks struct models (ca)
 - [X] Implement mock to `GET /api/v1/subject` endpoint (ca)
 - [X] Implement `GET /api/v1/messages/:id/status` endpoint (ca)
-- [ ] Implement status method on pigeon-go client (mt)
+- [ ] Implement status method on pigeon-go client (mt) 
 - [ ] Implement `POST /api/v1/messages/:id/cancel` endpoint (ca)
 - [ ] Handle cancellation in scheduler.go file (ja)
 - [ ] Implement rpc route for cancel message by id (ca)
@@ -324,6 +366,10 @@ Define relations of subjects and channels
 - [X] Add criteria model (ca)
 - [X] Add criteria examples to mock (ca)
 - [X] Implement criteria when create new message (ca)
+- [ ] Should use cron tab in criteria_value (ca)
+- [ ] Implement interface for any model
+- [ ] Return Subject when has create
+- [ ] Implement JWT in any request
 
 ```json
 {
