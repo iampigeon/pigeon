@@ -1,8 +1,6 @@
 package db
 
 import (
-	"fmt"
-
 	"github.com/boltdb/bolt"
 	"github.com/gogo/protobuf/proto"
 	"github.com/iampigeon/pigeon"
@@ -16,22 +14,6 @@ type MessageStore struct {
 	*Datastore
 }
 
-// GetMessages ...
-// func (ss *MessageStore) GetMessages() ([]*pigeon.Message, error) {
-// 	data, err := ioutil.ReadFile("../data.json")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	var mock pigeon.Mock
-// 	err = json.Unmarshal(data, &mock)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return mock.Messages, nil
-// }
-
 // AddMessage ...
 func (ss *MessageStore) AddMessage(m pigeon.Message) error {
 	err := ss.DB.Update(func(tx *bolt.Tx) error {
@@ -41,11 +23,13 @@ func (ss *MessageStore) AddMessage(m pigeon.Message) error {
 		if merr != nil {
 			return merr
 		}
+
 		v, jerr := proto.Marshal(&pb.Message{
-			Id:       m.ID.String(),
-			Content:  m.Content,
-			Endpoint: string(m.Endpoint),
-			Status:   string(m.Status),
+			Id:        m.ID.String(),
+			Content:   m.Content,
+			Endpoint:  string(m.Endpoint),
+			Status:    string(m.Status),
+			SubjectId: string(m.SubjectID),
 		})
 		if jerr != nil {
 			return jerr
@@ -55,8 +39,6 @@ func (ss *MessageStore) AddMessage(m pigeon.Message) error {
 	if err != nil {
 		return err
 	}
-
-	fmt.Println("se guardo")
 
 	return nil
 }
@@ -82,10 +64,11 @@ func (ss *MessageStore) GetMessage(id ulid.ULID) (*pigeon.Message, error) {
 	}
 
 	return &pigeon.Message{
-		ID:       id,
-		Content:  msg.Content,
-		Endpoint: pigeon.NetAddr(msg.Endpoint),
-		Status:   pigeon.MessageStatus(msg.Status),
+		ID:        id,
+		Content:   msg.Content,
+		Endpoint:  pigeon.NetAddr(msg.Endpoint),
+		Status:    pigeon.MessageStatus(msg.Status),
+		SubjectID: msg.SubjectId,
 	}, nil
 }
 
