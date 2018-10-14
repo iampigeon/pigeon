@@ -370,7 +370,7 @@ Define relations of subjects and channels
 - [ ] Implement arangodb on any model (key-value for now) (mt)
 - [ ] Implement test for check endpoint (mt)
 - [ ] Remove 'Endpoint' value from Message model (ca)
-- [X] Implement POST /messages/:id. (http, rcp, scheduler, message model, priority queue) (ca)
+- [X] Implement GET /messages/:id. (http, rcp, scheduler, message model, priority queue) (ca)
 - [X] Fix error on Pop method (scrips.go:22, scheduler.go:192) when pop element and there is none in the queue (ca)
 
 ```json
