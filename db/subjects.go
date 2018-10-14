@@ -60,3 +60,19 @@ func (ss *SubjectStore) GetUserSubjectByName(userID string, name string) (*pigeo
 
 	return nil, errors.New("subject not found")
 }
+
+// GeSubjectByID ...
+func (ss *SubjectStore) GeSubjectByID(ID string) (*pigeon.Subject, error) {
+	mock, err := getMock()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, subject := range mock.Subjects {
+		if subject.ID == ID {
+			return subject, nil
+		}
+	}
+
+	return nil, errors.New("subject not found")
+}
