@@ -86,6 +86,16 @@ type MessageStatusResponse struct {
 	Status string `json:"status"`
 }
 
+// MessageByIDResponse ...
+type MessageByIDResponse struct {
+	Message *pigeon.Message `json:"message"`
+}
+
+// MessageCancelResponse ...
+type MessageCancelResponse struct {
+	Status string `json:"status"`
+}
+
 // MessageResponse ...
 type MessageResponse struct {
 	ID      string `json:"id,omitempty"`
@@ -102,6 +112,7 @@ type getSubjectsContext struct {
 type getMessageStatusContext struct {
 	MessageStore *db.MessageStore
 	UserStore    *db.UserStore
+	SubjectStore *db.SubjectStore
 }
 
 type postMessageContext struct {
@@ -111,11 +122,24 @@ type postMessageContext struct {
 	CriteriaStore *db.CriteriaStore
 }
 
+type postCancelMessageContext struct {
+	MessageStore *db.MessageStore
+	SubjectStore *db.SubjectStore
+	UserStore    *db.UserStore
+}
+
+type getMessageByIDContext struct {
+	MessageStore *db.MessageStore
+	SubjectStore *db.SubjectStore
+	UserStore    *db.UserStore
+}
+
 // NewHTTPServer returns an initialized server
 //
 // GET /api/v1/subjects
 // POST /api/v1/messages
 // GET /api/v1/messages/:id/status
+// POST /api/v1/messages/:id/cancel
 //
 func NewHTTPServer(database *db.Datastore) *http.Server {
 	router := httprouter.New()
@@ -128,8 +152,10 @@ func NewHTTPServer(database *db.Datastore) *http.Server {
 	ts := &db.CriteriaStore{database}
 
 	router.GET("/api/v1/subjects", getSubjectsHTTPHandler(getSubjectsContext{SubjectStore: ss, UserStore: us, ChannelStore: cs}))
+	router.GET("/api/v1/messages/:id", getMessageByIDHTTPHandler(getMessageByIDContext{UserStore: us, SubjectStore: ss, MessageStore: ms}))
 	router.POST("/api/v1/messages", postMessageHTTPHandler(postMessageContext{UserStore: us, SubjectStore: ss, ChannelStore: cs, CriteriaStore: ts}))
 	router.GET("/api/v1/messages/:id/status", getStatusMessageHTTPHandler(getMessageStatusContext{MessageStore: ms, UserStore: us}))
+	router.POST("/api/v1/messages/:id/cancel", postCancelMessageHTTPHandler(postCancelMessageContext{MessageStore: ms, UserStore: us, SubjectStore: ss}))
 
 	addr := fmt.Sprintf(":%d", httpPort)
 	routes := negroni.Wrap(router)
@@ -186,6 +212,67 @@ func getSubjectsHTTPHandler(ctx getSubjectsContext) func(w http.ResponseWriter, 
 
 		response := new(Response)
 		response.Data = subjectsResponse
+
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func getMessageByIDHTTPHandler(ctx getMessageByIDContext) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// get api key from header
+		apiKey := r.Header.Get("X-Api-Key")
+
+		// get user by api key
+		_, err := ctx.UserStore.GetUserByAPIKey(apiKey)
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		// define id
+		id, err := ulid.Parse(ps.ByName("id"))
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// get message by id
+		msg, err := ctx.MessageStore.GetMessage(id)
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// // Get subject
+		// subject, err := ctx.SubjectStore.GeSubjectByID(msg.SubjectID)
+		// if err != nil {
+		// 	getLogger(r).Error(err)
+		// 	http.Error(w, err.Error(), http.StatusBadRequest)
+		// 	return
+		// }
+
+		// // Validate if message belongs to user
+		// if subject.UserID != user.ID {
+		// 	getLogger(r).Error(err)
+		// 	http.Error(w, err.Error(), http.StatusForbidden)
+		// 	return
+		// }
+
+		// prepare response
+		messageByIDResponse := new(MessageByIDResponse)
+		messageByIDResponse.Message = msg
+
+		response := new(Response)
+		response.Data = messageByIDResponse
 
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			getLogger(r).Error(err)
@@ -415,7 +502,7 @@ func getStatusMessageHTTPHandler(ctx getMessageStatusContext) func(w http.Respon
 		apiKey := r.Header.Get("X-Api-Key")
 
 		// get user by api key
-		_, err := ctx.UserStore.GetUserByAPIKey(apiKey)
+		user, err := ctx.UserStore.GetUserByAPIKey(apiKey)
 		if err != nil {
 			getLogger(r).Error(err)
 			http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -438,7 +525,20 @@ func getStatusMessageHTTPHandler(ctx getMessageStatusContext) func(w http.Respon
 			return
 		}
 
-		// TODO(ca): validate if message is own user
+		// Get subject
+		subject, err := ctx.SubjectStore.GeSubjectByID(msg.SubjectID)
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Validate if message belongs to user
+		if subject.UserID != user.ID {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
 
 		// prepare response
 		messageStatusResponse := new(MessageStatusResponse)
@@ -446,6 +546,100 @@ func getStatusMessageHTTPHandler(ctx getMessageStatusContext) func(w http.Respon
 
 		response := new(Response)
 		response.Data = messageStatusResponse
+
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func postCancelMessageHTTPHandler(ctx postCancelMessageContext) func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+		w.Header().Set("Content-Type", "application/json")
+
+		// Get api key from header
+		apiKey := r.Header.Get("X-Api-Key")
+
+		// Get user by api key
+		user, err := ctx.UserStore.GetUserByAPIKey(apiKey)
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		// Parse id
+		id, err := ulid.Parse(ps.ByName("id"))
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Get message
+		msg, err := ctx.MessageStore.GetMessage(id)
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Get subject
+		subject, err := ctx.SubjectStore.GeSubjectByID(msg.SubjectID)
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Validate if message belongs to user
+		if subject.UserID != user.ID {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusForbidden)
+			return
+		}
+
+		// TODO(ca): check this
+		addr := fmt.Sprintf("localhost:%d", grpcPort)
+
+		// Grpc connection
+		conn, err := grpc.Dial(addr, grpc.WithInsecure())
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer conn.Close()
+
+		// Define scheduler proto client
+		client := proto.NewSchedulerServiceClient(conn)
+
+		// delete message from scheduler
+		_, err = client.Cancel(context.Background(), &proto.CancelRequest{
+			Id: id.String(),
+		})
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Get message
+		msg, err = ctx.MessageStore.GetMessage(id)
+		if err != nil {
+			getLogger(r).Error(err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// prepare response
+		messageCancelResponse := new(MessageCancelResponse)
+		messageCancelResponse.Status = string(msg.Status)
+
+		response := new(Response)
+		response.Data = messageCancelResponse
 
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			getLogger(r).Error(err)
