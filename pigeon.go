@@ -20,6 +20,8 @@ const (
 	StatusFailedDeliver = "failed-deliver"
 	// StatusCrashedDeliver ...
 	StatusCrashedDeliver = "crashed-deliver"
+	// StatusCancelled ...
+	StatusCancelled = "cancelled"
 )
 
 // NetAddr is the network address of the Backend service where to validate and
@@ -68,6 +70,9 @@ type SchedulerService interface {
 
 	// Update updates the content of the message with the given id.
 	Update(id ulid.ULID, content []byte) error
+
+	// Cancel cancel the message with the given id.
+	Cancel(id ulid.ULID) error
 }
 
 // Backend manages the approval and delivery of messages.
