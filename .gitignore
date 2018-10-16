@@ -3,3 +3,5 @@
 /**/*.pb.go
 .vscode
 vendor/*/
+
+pigeon-api-production.pem
