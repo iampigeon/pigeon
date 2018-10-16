@@ -49,10 +49,11 @@ func (s *Service) Get(ctx context.Context, r *pb.GetRequest) (*pb.GetResponse, e
 
 	return &pb.GetResponse{
 		Message: &pb.Message{
-			Id:       r.Id,
-			Content:  msg.Content,
-			Endpoint: string(msg.Endpoint),
-			Status:   string(msg.Status),
+			Id:        r.Id,
+			Content:   msg.Content,
+			Endpoint:  string(msg.Endpoint),
+			Status:    string(msg.Status),
+			SubjectId: string(msg.SubjectID),
 		},
 	}, nil
 }
@@ -67,4 +68,17 @@ func (s *Service) Update(ctx context.Context, r *pb.UpdateRequest) (*pb.UpdateRe
 	}
 
 	return &pb.UpdateResponse{}, nil
+}
+
+// Cancel ...
+func (s *Service) Cancel(ctx context.Context, r *pb.CancelRequest) (*pb.CancelResponse, error) {
+	id, err := ulid.Parse(r.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := s.schedulerSvc.Cancel(id); err != nil {
+		return nil, err
+	}
+	return &pb.CancelResponse{}, nil
 }

@@ -123,9 +123,27 @@ func (s *service) Get(id ulid.ULID) (*pigeon.Message, error) {
 	return msg, nil
 }
 
-// TODO(ca): change Update protobuf params method
 func (s *service) Update(id ulid.ULID, content []byte) error {
 	err := s.ms.UpdateContent(id, content)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *service) Cancel(id ulid.ULID) error {
+	ok, err := s.pq.DeleteByID(id)
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		log.Printf("%s not found in priority queue", id)
+		return nil
+	}
+
+	err = s.ms.UpdateStatus(id, pigeon.StatusCancelledDeliver)
 	if err != nil {
 		return err
 	}
@@ -171,7 +189,12 @@ func (s *service) run() {
 
 		select {
 		case <-tick:
-			if id := pq.Pop(); id != nil {
+			id, err := pq.Pop()
+			if err != nil {
+				log.Printf(err.Error())
+			}
+
+			if id != nil {
 				go s.send(*id)
 			}
 			next = 0

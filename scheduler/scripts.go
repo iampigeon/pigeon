@@ -6,6 +6,7 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/oklog/ulid"
+	"github.com/pkg/errors"
 )
 
 // TODO: Add retry logic and only panic if connection is unrecoverable.
@@ -17,7 +18,7 @@ var (
 		"pop": `
 			local result_set = redis.call('ZRANGE', 'pq:ids', 0, 0)
 			if not result_set or #result_set == 0 then
-				return false
+				return ''
 			end
 
 			redis.call('ZREMRANGEBYRANK', 'pq:ids', 0, 0)
@@ -38,6 +39,13 @@ var (
 				return false
 			end
 			return result_set[1]
+		`,
+		"delete": `
+			local id = ARGV[1]
+
+			local result_set = redis.call('DEL', 'pq:ids', id)
+
+			return result_set
 		`,
 	}
 )
@@ -102,21 +110,44 @@ func (pq *priorityQueue) Peek() *ulid.ULID {
 	return &id
 }
 
-func (pq *priorityQueue) Pop() *ulid.ULID {
+func (pq *priorityQueue) Pop() (*ulid.ULID, error) {
 	conn := pq.pool.Get()
 	defer conn.Close()
 
 	idStr, err := redis.String(scripts["pop"].Do(conn))
 	if err != nil {
-		log.Println("BBBB")
-		panic(err)
+		return nil, err
 	}
+
+	if idStr == "" {
+		return nil, errors.New("not found message at pop on priority queue")
+	}
+
 	id, err := ulid.Parse(idStr)
 	if err != nil {
-		log.Println("CCCC")
+		return nil, err
 		panic(err)
 	}
-	return &id
+
+	return &id, nil
+}
+
+// DeleteByID
+func (pq *priorityQueue) DeleteByID(id ulid.ULID) (bool, error) {
+	conn := pq.pool.Get()
+	defer conn.Close()
+
+	// TODO: check for casting
+	res, err := redis.Int(scripts["delete"].Do(conn, id.String()))
+	if err != nil {
+		return false, err
+	}
+
+	if res == 0 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func dial(config StorageConfig) func() (redis.Conn, error) {

@@ -41,6 +41,7 @@ service SchedulerService {
     rpc Put(PutRequest) returns (PutResponse) {}
     rpc Get(GetRequest) returns (GetResponse) {}
     rpc Update(UpdateRequest) returns (UpdateResponse) {}
+    rpc Cancel(CancelRequest) returns (CancelResponse) {}
 }
 
 message PutRequest {
@@ -51,6 +52,14 @@ message PutRequest {
 }
 
 message PutResponse {
+    Error error = 1;
+}
+
+message CancelRequest {
+    string id       = 1;
+}
+
+message CancelResponse {
     Error error = 1;
 }
 

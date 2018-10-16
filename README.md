@@ -313,7 +313,7 @@ Define relations of subjects and channels
 
 ```json
 {
-  "messages": [{
+  "criterias": [{
     "id": "t1",
     "name": "low",
     "value": 86400
@@ -344,18 +344,15 @@ Define relations of subjects and channels
 - [X] Define and implements mocks struct models (ca)
 - [X] Implement mock to `GET /api/v1/subject` endpoint (ca)
 - [X] Implement `GET /api/v1/messages/:id/status` endpoint (ca)
-- [ ] Implement status method on pigeon-go client (mt) 
-- [ ] Implement `POST /api/v1/messages/:id/cancel` endpoint (ca)
-- [ ] Handle cancellation in scheduler.go file (ja)
-- [ ] Implement rpc route for cancel message by id (ca)
+- [X] Implement status method on pigeon-go client (mt)
+- [X] Implement `POST /api/v1/messages/:id/cancel` endpoint (ca)
+- [X] Handle cancellation in scheduler.go file (ca)
+- [X] Implement rpc route for cancel message by id (ca)
 - [ ] Implement cancel method on `pigeon-go` client (mt)
 - [X] Define and implement `pigeon-http` channel (ca)
 - [X] Add `pigeon-http` value to subject model {options: {headers}} (ca)
 - [ ] Implement 'callback_post_url' using pigeon-http service inside scheduler.go file (ca)
 - [X] Append user-channels `options` to content message by channel (ca)
-- [ ] Implement `Subjects` table on `BoltDB` (ca)
-- [ ] Implement `Subject Channels` table on `BoltDB` (ca)
-- [ ] Implement `Users` table on `BoltDB` (ca)
 - [X] Add 'data.json' on docker (ca)
 - [X] Implement `Messages` table on `BoltDB` (ca)
 - [X] Add Status on `Messages` protobuf (ca)
@@ -367,9 +364,14 @@ Define relations of subjects and channels
 - [X] Add criteria examples to mock (ca)
 - [X] Implement criteria when create new message (ca)
 - [ ] Should use cron tab in criteria_value (ca)
-- [ ] Implement interface for any model
-- [ ] Return Subject when has create
-- [ ] Implement JWT in any request
+- [ ] Implement interface for any model (mt)
+- [ ] Return Subject when has create (ca)
+- [ ] Implement JWT in any request (ca)
+- [ ] Implement arangodb on any model (key-value for now) (mt)
+- [ ] Implement test for check endpoint (mt)
+- [ ] Remove 'Endpoint' value from Message model (ca)
+- [X] Implement GET /messages/:id. (http, rcp, scheduler, message model, priority queue) (ca)
+- [X] Fix error on Pop method (scrips.go:22, scheduler.go:192) when pop element and there is none in the queue (ca)
 
 ```json
 {
