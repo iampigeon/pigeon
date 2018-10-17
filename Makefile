@@ -11,10 +11,9 @@ connect_server cs:
 	@echo "[ssh] Connecting..."
 	@$(SSH) -i $(KEY) $(SERVER_USER)@$(DOMAIN)
 
-copy_makefile cm:
-	@echo "[copy] Sending Makefile to server..."
-	@$(SCP) -i $(KEY) Makefile $(SERVER_USER)@$(DOMAIN):~
-	@echo "[copy] done"
+copy_to_server cts:
+	@echo "[copy] Sending Makefile and Dockercompose file to server..."
+	@$(SCP) -i $(KEY) Makefile docker-compose.yml $(SERVER_USER)@$(DOMAIN):~
 
 dc_build dcb:
 	@echo "[build] Building Docker Compose..."
