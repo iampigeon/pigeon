@@ -5,15 +5,24 @@ DOMAIN=api.iampigeon.com
 SSH ?= ssh
 SCP ?= scp
 
-run r: build dc-kill clean db-build dc
+# TODO(ca): add clean and build methods to run
+run r: dc_kill dc_build dc
 
 connect_server cs:
 	@echo "[ssh] Connecting..."
 	@$(SSH) -i $(KEY) $(SERVER_USER)@$(DOMAIN)
 
-copy_to_server cts:
-	@echo "[copy] Sending Makefile and Dockercompose file to server..."
-	@$(SCP) -i $(KEY) Makefile docker-compose.yml $(SERVER_USER)@$(DOMAIN):~
+copy_makefile cm:
+	@echo "[copy] Sending Makefile file to server..."
+	@$(SCP) -i $(KEY) Makefile docker-compose.yml $(SERVER_USER)@$(DOMAIN):~/pigeon
+
+copy_dockercompose cm:
+	@echo "[copy] Sending Docker Compose file to server..."
+	@$(SCP) -i $(KEY) Makefile docker-compose.yml $(SERVER_USER)@$(DOMAIN):~/pigeon
+
+copy_bin cb:
+	@echo "[copy] Sending Bin folder file to server..."
+	@$(SCP) -r -i $(KEY) bin $(SERVER_USER)@$(DOMAIN):~/pigeon
 
 dc_build dcb:
 	@echo "[build] Building Docker Compose..."
