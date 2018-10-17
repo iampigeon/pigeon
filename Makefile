@@ -16,7 +16,7 @@ copy_makefile cm:
 	@echo "[copy] Sending Makefile file to server..."
 	@$(SCP) -i $(KEY) Makefile docker-compose.yml $(SERVER_USER)@$(DOMAIN):~/pigeon
 
-copy_dockercompose cm:
+copy_dockercompose cd:
 	@echo "[copy] Sending Docker Compose file to server..."
 	@$(SCP) -i $(KEY) Makefile docker-compose.yml $(SERVER_USER)@$(DOMAIN):~/pigeon
 
