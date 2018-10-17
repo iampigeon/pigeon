@@ -143,7 +143,7 @@ func (s *service) Cancel(id ulid.ULID) error {
 		return nil
 	}
 
-	err = s.ms.UpdateStatus(id, pigeon.StatusCancelledDeliver)
+	err = s.ms.UpdateStatus(id, pigeon.StatusCancelled)
 	if err != nil {
 		return err
 	}
