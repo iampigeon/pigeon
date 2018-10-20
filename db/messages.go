@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/boltdb/bolt"
-	"github.com/gogo/protobuf/proto"
 	"github.com/iampigeon/pigeon"
 	"github.com/oklog/ulid"
 
@@ -118,6 +116,7 @@ func (ss *MessageStore) GetMessageByID(id ulid.ULID) (*pigeon.Message, error) {
 	FILTER m.id == '%s'
 	RETURN m
 	`, id.String())
+	fmt.Println(query)
 
 	cursor, err := ss.Collection.Database().Query(*ss.Dst.Context, query, nil)
 	if err != nil {
@@ -141,25 +140,15 @@ func (ss *MessageStore) GetMessageByID(id ulid.ULID) (*pigeon.Message, error) {
 
 // UpdateContent ...
 func (ss *MessageStore) UpdateContent(id ulid.ULID, content []byte) error {
-	var msg pb.Message
+	query := fmt.Sprintf(`
+	FOR msg IN message_collection
+	FILTER msg.id == '%s'
+	UPDATE msg WITH { _key: msg._key,  content: '%s' }
+	IN message_collection
+	`, id.String(), content)
+	fmt.Println(query)
 
-	err := ss.Dst.DB.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(msgBucket)
-		k, err := id.MarshalBinary()
-		if err != nil {
-			return err
-		}
-		v := b.Get(k)
-		if err = proto.Unmarshal(v, &msg); err != nil {
-			return err
-		}
-		msg.Content = content
-		v, err = proto.Marshal(&msg)
-		if err != nil {
-			return err
-		}
-		return b.Put(k, v)
-	})
+	_, err := ss.Collection.Database().Query(*ss.Dst.Context, query, nil)
 	if err != nil {
 		return err
 	}
@@ -169,25 +158,14 @@ func (ss *MessageStore) UpdateContent(id ulid.ULID, content []byte) error {
 
 // UpdateStatus ...
 func (ss *MessageStore) UpdateStatus(id ulid.ULID, status pigeon.MessageStatus) error {
-	var msg pb.Message
+	query := fmt.Sprintf(`
+	FOR msg IN message_collection
+	FILTER msg.id == '%s'
+	UPDATE msg WITH { _key: msg._key,  status: '%s' }
+	IN message_collection
+	`, id.String(), string(status))
 
-	err := ss.Dst.DB.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(msgBucket)
-		k, err := id.MarshalBinary()
-		if err != nil {
-			return err
-		}
-		v := b.Get(k)
-		if err = proto.Unmarshal(v, &msg); err != nil {
-			return err
-		}
-		msg.Status = string(status)
-		v, err = proto.Marshal(&msg)
-		if err != nil {
-			return err
-		}
-		return b.Put(k, v)
-	})
+	_, err := ss.Collection.Database().Query(*ss.Dst.Context, query, nil)
 	if err != nil {
 		return err
 	}
