@@ -8,7 +8,7 @@ import (
 
 // ChannelStore ...
 type ChannelStore struct {
-	*Datastore
+	Dst *Datastore
 }
 
 // GetChannels ...
