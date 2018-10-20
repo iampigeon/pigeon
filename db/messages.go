@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"fmt"
+	"log"
 
 	"github.com/boltdb/bolt"
 	"github.com/gogo/protobuf/proto"
@@ -64,6 +66,7 @@ func (ss *MessageStore) AddMessage(m pigeon.Message) error {
 		"endpoint":   string(m.Endpoint),
 		"status":     string(m.Status),
 		"subject_id": string(m.SubjectID),
+		"user_id":    m.UserID,
 	}
 
 	_, err := ss.Collection.CreateDocument(ctx, msg)
@@ -75,24 +78,57 @@ func (ss *MessageStore) AddMessage(m pigeon.Message) error {
 }
 
 // GetMessage ...
-func (ss *MessageStore) GetMessage(id ulid.ULID) (*pigeon.Message, error) {
+func (ss *MessageStore) GetMessage(id ulid.ULID, u *pigeon.User) (*pigeon.Message, error) {
 	var msg pb.Message
 
-	err := ss.Dst.DB.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket(msgBucket)
-		k, err := id.MarshalBinary()
-		if err != nil {
-			return err
-		}
-		v := b.Get(k)
-		if err := proto.Unmarshal(v, &msg); err != nil {
-			return err
-		}
-		return nil
-	})
+	query := fmt.Sprintf(`
+	FOR m IN message_collection
+	FILTER m.id == '%s'
+	FILTER m.user_id == '%s'
+	RETURN m
+	`, id.String(), u.ID)
+	fmt.Println(query)
+
+	cursor, err := ss.Collection.Database().Query(*ss.Dst.Context, query, nil)
 	if err != nil {
 		return nil, err
 	}
+
+	meta, err := cursor.ReadDocument(*ss.Dst.Context, &msg)
+	if err != nil {
+		return nil, err
+	}
+	log.Println("META DATA \n", meta)
+
+	return &pigeon.Message{
+		ID:        id,
+		Content:   msg.Content,
+		Endpoint:  pigeon.NetAddr(msg.Endpoint),
+		Status:    pigeon.MessageStatus(msg.Status),
+		SubjectID: msg.SubjectId,
+	}, nil
+}
+
+// GetMessageByID ...
+func (ss *MessageStore) GetMessageByID(id ulid.ULID) (*pigeon.Message, error) {
+	var msg pb.Message
+
+	query := fmt.Sprintf(`
+	FOR m IN message_collection
+	FILTER m.id == '%s'
+	RETURN m
+	`, id.String())
+
+	cursor, err := ss.Collection.Database().Query(*ss.Dst.Context, query, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	meta, err := cursor.ReadDocument(*ss.Dst.Context, &msg)
+	if err != nil {
+		return nil, err
+	}
+	log.Println("META DATA \n", meta)
 
 	return &pigeon.Message{
 		ID:        id,
