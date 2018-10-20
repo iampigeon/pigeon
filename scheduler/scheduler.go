@@ -84,7 +84,7 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 		}
 
 		// send http error through pigeon-htpp
-		err := s.sendCallbackHTTPMessage(subjectID, "could not deliver message")
+		err := s.sendCallbackHTTPMessage(subjectID, "could not deliver message", userID)
 		if err != nil {
 			// TODO(ca): check this error
 			log.Printf("Error: could not send callback http message %v", err)
@@ -101,7 +101,7 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 		}
 
 		// send http error through pigeon-htpp
-		err = s.sendCallbackHTTPMessage(subjectID, "could not deliver message")
+		err = s.sendCallbackHTTPMessage(subjectID, "could not deliver message", userID)
 		if err != nil {
 			return err
 		}
@@ -258,7 +258,7 @@ func (s *service) send(id ulid.ULID) {
 		}
 
 		// send http error through pigeon-htpp
-		err := s.sendCallbackHTTPMessage(msg.SubjectID, "could not deliver message")
+		err := s.sendCallbackHTTPMessage(msg.SubjectID, "could not deliver message", msg.UserID)
 		if err != nil {
 			// TODO(ca): check this error
 			log.Printf("Error: could not send callback http message %v", err)
@@ -279,7 +279,7 @@ func (s *service) send(id ulid.ULID) {
 		}
 
 		// send http error through pigeon-htpp
-		err := s.sendCallbackHTTPMessage(msg.SubjectID, "failed to deliver message")
+		err := s.sendCallbackHTTPMessage(msg.SubjectID, "failed to deliver message", msg.UserID)
 		if err != nil {
 			// TODO(ca): check this error
 			log.Printf("Error: could not send callback http message %v", err)
@@ -296,7 +296,7 @@ func (s *service) send(id ulid.ULID) {
 	}
 }
 
-func (s *service) sendCallbackHTTPMessage(subjectID string, messageError string) error {
+func (s *service) sendCallbackHTTPMessage(subjectID, messageError, userID string) error {
 	id, err := generateID(0)
 	if err != nil {
 		return err
@@ -312,7 +312,7 @@ func (s *service) sendCallbackHTTPMessage(subjectID string, messageError string)
 	}
 
 	// TODO(ca): use callback_post_url as a new HTTP message
-	err = s.Put(*id, c, pigeon.ServicePigeonHTTP, pigeon.StatusPending, subjectID)
+	err = s.Put(*id, c, pigeon.ServicePigeonHTTP, pigeon.StatusPending, subjectID, userID)
 	if err != nil {
 		return err
 	}

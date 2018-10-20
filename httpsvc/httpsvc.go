@@ -404,7 +404,7 @@ func postMessageHTTPHandler(ctx postMessageContext) func(w http.ResponseWriter, 
 				}
 
 				// 	Send MQTT message
-				id, err := sendMessage(client, string(content), pigeonMQTTEndpoint, subject.ID, criteriaDelay, user.ID)
+				id, err := sendMessage(client, string(content), pigeon.EndpointMQTT, subject.ID, criteriaDelay, user.ID)
 				if err != nil {
 					response.Error = err.Error()
 				} else {
@@ -463,7 +463,7 @@ func postMessageHTTPHandler(ctx postMessageContext) func(w http.ResponseWriter, 
 				}
 
 				// 	Send MQTT message
-				id, err := sendMessage(client, string(content), pigeon.HTTPEndpoint, subject.ID, criteriaDelay, user.ID)
+				id, err := sendMessage(client, string(content), pigeon.EndpointHTTP, subject.ID, criteriaDelay, user.ID)
 				if err != nil {
 					response.Error = err.Error()
 				} else {
