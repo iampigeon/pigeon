@@ -57,7 +57,7 @@ type service struct {
 	ms *db.MessageStore
 }
 
-func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, status pigeon.MessageStatus, subjectID string) error {
+func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, status pigeon.MessageStatus, subjectID, userID string) error {
 	// TODO(ja): use secure connections
 
 	host, port, err := net.SplitHostPort(string(endpoint))
@@ -115,9 +115,10 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 	m := pigeon.Message{
 		ID:        id,
 		Content:   content,
-		Endpoint:  endpoint,
 		Status:    status,
+		Endpoint:  endpoint,
 		SubjectID: subjectID,
+		UserID:    userID,
 	}
 
 	err = s.ms.AddMessage(m)
@@ -130,8 +131,17 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 	return nil
 }
 
-func (s *service) Get(id ulid.ULID) (*pigeon.Message, error) {
-	msg, err := s.ms.GetMessage(id)
+func (s *service) GetMessageByID(id ulid.ULID) (*pigeon.Message, error) {
+	msg, err := s.ms.GetMessageByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+func (s *service) Get(id ulid.ULID, u *pigeon.User) (*pigeon.Message, error) {
+	msg, err := s.ms.GetMessage(id, u)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +231,7 @@ func (s *service) run() {
 }
 
 func (s *service) send(id ulid.ULID) {
-	msg, err := s.Get(id)
+	msg, err := s.GetMessageByID(id)
 	if err != nil {
 		log.Printf("Error: could not get message %s, %v", id, err)
 		return

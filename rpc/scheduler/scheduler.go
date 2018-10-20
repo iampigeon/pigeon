@@ -30,7 +30,7 @@ func (s *Service) Put(ctx context.Context, r *pb.PutRequest) (*pb.PutResponse, e
 		return nil, err
 	}
 
-	if err := s.schedulerSvc.Put(id, r.Content, pigeon.NetAddr(r.Endpoint), pigeon.StatusPending, r.SubjectId); err != nil {
+	if err := s.schedulerSvc.Put(id, r.Content, pigeon.NetAddr(r.Endpoint), pigeon.StatusPending, r.SubjectId, r.UserId); err != nil {
 		return nil, err
 	}
 
@@ -42,7 +42,8 @@ func (s *Service) Get(ctx context.Context, r *pb.GetRequest) (*pb.GetResponse, e
 		return nil, err
 	}
 
-	msg, err := s.schedulerSvc.Get(id)
+	u := &pigeon.User{ID: r.UserId}
+	msg, err := s.schedulerSvc.Get(id, u)
 	if err != nil {
 		return nil, err
 	}

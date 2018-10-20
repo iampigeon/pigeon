@@ -224,7 +224,7 @@ func getMessageByIDHTTPHandler(ctx getMessageByIDContext) func(w http.ResponseWr
 		apiKey := r.Header.Get("X-Api-Key")
 
 		// get user by api key
-		_, err := ctx.UserStore.GetUserByAPIKey(apiKey)
+		user, err := ctx.UserStore.GetUserByAPIKey(apiKey)
 		if err != nil {
 			getLogger(r).Error(err)
 			http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -240,7 +240,7 @@ func getMessageByIDHTTPHandler(ctx getMessageByIDContext) func(w http.ResponseWr
 		}
 
 		// get message by id
-		msg, err := ctx.MessageStore.GetMessage(id)
+		msg, err := ctx.MessageStore.GetMessage(id, user)
 		if err != nil {
 			getLogger(r).Error(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -404,7 +404,7 @@ func postMessageHTTPHandler(ctx postMessageContext) func(w http.ResponseWriter, 
 				}
 
 				// 	Send MQTT message
-				id, err := sendMessage(client, string(content), pigeon.EndpointMQTT, subject.ID, criteriaDelay)
+				id, err := sendMessage(client, string(content), pigeonMQTTEndpoint, subject.ID, criteriaDelay, user.ID)
 				if err != nil {
 					response.Error = err.Error()
 				} else {
@@ -462,8 +462,8 @@ func postMessageHTTPHandler(ctx postMessageContext) func(w http.ResponseWriter, 
 					continue
 				}
 
-				// 	Send HTTP message
-				id, err := sendMessage(client, string(content), pigeon.EndpointHTTP, subject.ID, criteriaDelay)
+				// 	Send MQTT message
+				id, err := sendMessage(client, string(content), pigeon.HTTPEndpoint, subject.ID, criteriaDelay, user.ID)
 				if err != nil {
 					response.Error = err.Error()
 				} else {
@@ -513,7 +513,7 @@ func getStatusMessageHTTPHandler(ctx getMessageStatusContext) func(w http.Respon
 		}
 
 		// get message by id
-		msg, err := ctx.MessageStore.GetMessage(id)
+		msg, err := ctx.MessageStore.GetMessage(id, user)
 		if err != nil {
 			getLogger(r).Error(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -574,7 +574,7 @@ func postCancelMessageHTTPHandler(ctx postCancelMessageContext) func(w http.Resp
 		}
 
 		// Get message
-		msg, err := ctx.MessageStore.GetMessage(id)
+		msg, err := ctx.MessageStore.GetMessage(id, user)
 		if err != nil {
 			getLogger(r).Error(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -622,7 +622,7 @@ func postCancelMessageHTTPHandler(ctx postCancelMessageContext) func(w http.Resp
 		}
 
 		// Get message
-		msg, err = ctx.MessageStore.GetMessage(id)
+		msg, err = ctx.MessageStore.GetMessage(id, user)
 		if err != nil {
 			getLogger(r).Error(err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -677,7 +677,7 @@ func generateID(criteriaDelay time.Duration) (string, error) {
 	return id.String(), nil
 }
 
-func sendMessage(client proto.SchedulerServiceClient, content string, endpoint string, subjectID string, criteriaDelay time.Duration) (string, error) {
+func sendMessage(client proto.SchedulerServiceClient, content, endpoint, subjectID string, criteriaDelay time.Duration, userID string) (string, error) {
 	//generate uid
 	id, err := generateID(criteriaDelay)
 	if err != nil {
@@ -690,6 +690,7 @@ func sendMessage(client proto.SchedulerServiceClient, content string, endpoint s
 		Content:   []byte(content),
 		Endpoint:  endpoint,
 		SubjectId: subjectID,
+		UserId:    userID,
 	})
 	if err != nil {
 		// TODO: move this error
