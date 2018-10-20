@@ -4,7 +4,7 @@
 set -e
 cmd="$@"
 
-until curl http://localhost:8529/_api/version; do
+until curl http://arango:8529/_api/version; do
 >&2 echo "\nArango is unavailable - sleeping"
 sleep 1
 done
