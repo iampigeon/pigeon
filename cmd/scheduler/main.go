@@ -40,9 +40,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	time.Sleep(5 * time.Second)
 	dst, err := db.NewDatastore(*dbfile, conn)
 	if err != nil {
-		fmt.Println(err)
 		log.Fatal(err)
 	}
 
