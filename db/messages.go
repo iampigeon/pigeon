@@ -55,8 +55,8 @@ func NewMessageStore(dst *Datastore) (*MessageStore, error) {
 	}, nil
 }
 
-// StoreMessage ...
-func (ss *MessageStore) StoreMessage(m *pigeon.Message) error {
+// AddMessage ...
+func (ss *MessageStore) AddMessage(m pigeon.Message) error {
 	ctx := context.Background()
 	msg := map[string]interface{}{
 		"id":         m.ID.String(),
@@ -67,35 +67,6 @@ func (ss *MessageStore) StoreMessage(m *pigeon.Message) error {
 	}
 
 	_, err := ss.Collection.CreateDocument(ctx, msg)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// AddMessage ...
-func (ss *MessageStore) AddMessage(m pigeon.Message) error {
-	err := ss.Dst.DB.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket(msgBucket)
-
-		k, merr := m.ID.MarshalBinary()
-		if merr != nil {
-			return merr
-		}
-
-		v, jerr := proto.Marshal(&pb.Message{
-			Id:        m.ID.String(),
-			Content:   m.Content,
-			Endpoint:  string(m.Endpoint),
-			Status:    string(m.Status),
-			SubjectId: string(m.SubjectID),
-		})
-		if jerr != nil {
-			return jerr
-		}
-		return b.Put(k, v)
-	})
 	if err != nil {
 		return err
 	}
