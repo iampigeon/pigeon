@@ -4,6 +4,11 @@ services:
   redis:
     image: redis
 
+  arango:
+    image: arangodb:3.3.16
+    environment:
+      ARANGO_NO_AUTH: 1
+
   pigeon:
     build: .
     links:
@@ -13,6 +18,7 @@ services:
       - 9001:9001
     depends_on:
       - pigeon-mqtt
+      - arango
 
   pigeon-mqtt:
     build: ../pigeon-mqtt
