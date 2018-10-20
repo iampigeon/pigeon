@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	adbHttp "github.com/arangodb/go-driver/http"
 	"github.com/iampigeon/pigeon/db"
 	"github.com/iampigeon/pigeon/httpsvc"
 	"github.com/iampigeon/pigeon/proto"
@@ -21,6 +22,7 @@ func main() {
 	port := flag.Int("port", 9001, "port of the service")
 	host := flag.String("host", "", "host of the service")
 	dbfile := flag.String("db", "messages.db", "file to store messages")
+	endpoint := flag.String("endpoint", "http://arango:8529", "arangodb network address")
 
 	redisURL := flag.String("redis_url", "redis://redis:6379/0", "URL of the redis server.")
 	redisIdleTimeout := flag.Duration("redis_idle_timeout", 5*time.Second, "Timeout for redis idle connections.")
@@ -30,14 +32,22 @@ func main() {
 	flag.Parse()
 
 	// ----- Init DB
-	database, err := db.NewDatastore(*dbfile)
+	conn, err := adbHttp.NewConnection(adbHttp.ConnectionConfig{
+		Endpoints: []string{*endpoint},
+	})
+	if err != nil {
+		fmt.Print("FUCK")
+		log.Fatal(err)
+	}
+
+	dst, err := db.NewDatastore(*dbfile, conn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// ----- Init HTTP
 	// TODO: implements recover
-	httpServer := httpsvc.NewHTTPServer(database)
+	httpServer := httpsvc.NewHTTPServer(dst)
 	log.Printf("Running server on: " + httpServer.Addr)
 
 	go func() {
@@ -54,7 +64,10 @@ func main() {
 	}
 
 	//stores
-	ms := &db.MessageStore{database}
+	ms, err := db.NewMessageStore(dst)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// ----- Init grpc
 	s := grpc.NewServer()

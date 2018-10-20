@@ -9,7 +9,7 @@ import (
 
 // CriteriaStore ...
 type CriteriaStore struct {
-	*Datastore
+	Dst *Datastore
 }
 
 // GetCriterias ...

@@ -47,7 +47,7 @@ type MessageStatus string
 type Message struct {
 	// ID is an ULID that uniquely identifies (https://github.com/alizain/ulid)
 	// a message and encodes the time when the message needs to be sent.
-	ID ulid.ULID `json:"id"`
+	ID ulid.ULID `json:"id", arango:"id"`
 
 	// Content is an arbitrary byte slice that describes the message to
 	// be sent.
@@ -55,15 +55,16 @@ type Message struct {
 	// The format of the content varies by the Backend used, and to avoid
 	// latter failures the Backend must validate the content before the
 	// approval of the message.
-	Content []byte `json:"content,string"`
+	Content []byte `json:"content,string", arango:"content"`
 
 	// Endpoint identifies the Backend service used to send the message.
-	Endpoint NetAddr
+	Endpoint NetAddr `json:"-", arango:"endpoint"`
 
 	// Status ...
-	Status MessageStatus `json:"status"`
+	Status MessageStatus `json:"status", arango:"status"`
 
-	SubjectID string `json:"subject_id"`
+	SubjectID string `json:"subject_id", arango:"subject_id"`
+	UserID    string `json:"-", arango:"user_id"`
 
 	// Subject virtual reference to subject
 	Subject *Subject `json:"-"`
@@ -73,12 +74,13 @@ type Message struct {
 type SchedulerService interface {
 	// Put stores a message content and schedule the delivery on t time.
 	// TODO(ca): change subjectID params to ulid.ULID type
-	Put(id ulid.ULID, content []byte, endpoint NetAddr, status MessageStatus, subjectID string) error
+	Put(id ulid.ULID, content []byte, endpoint NetAddr, status MessageStatus, subjectID, userID string) error
 
 	// Get retrieves the message with the given id.
 	//
 	// In case of any error the Message will be nil.
-	Get(id ulid.ULID) (*Message, error)
+	Get(id ulid.ULID, u *User) (*Message, error)
+	GetMessageByID(id ulid.ULID) (*Message, error)
 
 	// Update updates the content of the message with the given id.
 	Update(id ulid.ULID, content []byte) error

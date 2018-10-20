@@ -1,18 +1,28 @@
 package db
 
 import (
+	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 
 	"github.com/iampigeon/pigeon"
 
+	arango "github.com/arangodb/go-driver"
 	"github.com/boltdb/bolt"
+)
+
+const (
+	pigeonDB = "pigeon_db"
 )
 
 // Datastore sote data in db using bolt as a db backend
 type Datastore struct {
-	DB *bolt.DB
+	DB           *bolt.DB
+	ArangoClient arango.Client
+	PigeonDB     arango.Database
+	Context      *context.Context
 }
 
 var (
@@ -22,7 +32,7 @@ var (
 
 // NewDatastore returns a new datastore instance or an error if
 // a datasore cannot be returned
-func NewDatastore(path string) (*Datastore, error) {
+func NewDatastore(path string, conn arango.Connection) (*Datastore, error) {
 	db, err := bolt.Open(path, os.ModePerm, nil)
 	if err != nil {
 		return nil, err
@@ -44,7 +54,46 @@ func NewDatastore(path string) (*Datastore, error) {
 		return nil, err
 	}
 
-	return &Datastore{DB: db}, nil
+	//ArangoClient ...
+	cl, err := arango.NewClient(arango.ClientConfig{
+		Connection: conn,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	ctx := context.Background()
+	found, err := cl.DatabaseExists(ctx, pigeonDB)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	var pdb arango.Database
+	if !found {
+		opt := new(arango.CreateDatabaseOptions)
+		pdb, err = cl.CreateDatabase(ctx, pigeonDB, opt)
+		if err != nil {
+			return nil, err
+		}
+		return &Datastore{
+			DB:           db,
+			ArangoClient: cl,
+			PigeonDB:     pdb,
+			Context:      &ctx,
+		}, nil
+	}
+	pdb, err = cl.Database(ctx, pigeonDB)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Datastore{
+		DB:           db,
+		ArangoClient: cl,
+		PigeonDB:     pdb,
+		Context:      &ctx,
+	}, nil
 }
 
 func getMock() (*pigeon.Mock, error) {

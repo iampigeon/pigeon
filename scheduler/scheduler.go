@@ -57,7 +57,7 @@ type service struct {
 	ms *db.MessageStore
 }
 
-func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, status pigeon.MessageStatus, subjectID string) error {
+func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, status pigeon.MessageStatus, subjectID, userID string) error {
 	// TODO(ja): use secure connections
 
 	host, port, err := net.SplitHostPort(string(endpoint))
@@ -84,7 +84,7 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 		}
 
 		// send http error through pigeon-htpp
-		err := s.sendCallbackHTTPMessage(subjectID, "could not deliver message")
+		err := s.sendCallbackHTTPMessage(subjectID, "could not deliver message", userID)
 		if err != nil {
 			// TODO(ca): check this error
 			log.Printf("Error: could not send callback http message %v", err)
@@ -101,7 +101,7 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 		}
 
 		// send http error through pigeon-htpp
-		err = s.sendCallbackHTTPMessage(subjectID, "could not deliver message")
+		err = s.sendCallbackHTTPMessage(subjectID, "could not deliver message", userID)
 		if err != nil {
 			return err
 		}
@@ -115,9 +115,10 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 	m := pigeon.Message{
 		ID:        id,
 		Content:   content,
-		Endpoint:  endpoint,
 		Status:    status,
+		Endpoint:  endpoint,
 		SubjectID: subjectID,
+		UserID:    userID,
 	}
 
 	err = s.ms.AddMessage(m)
@@ -130,8 +131,17 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 	return nil
 }
 
-func (s *service) Get(id ulid.ULID) (*pigeon.Message, error) {
-	msg, err := s.ms.GetMessage(id)
+func (s *service) GetMessageByID(id ulid.ULID) (*pigeon.Message, error) {
+	msg, err := s.ms.GetMessageByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return msg, nil
+}
+
+func (s *service) Get(id ulid.ULID, u *pigeon.User) (*pigeon.Message, error) {
+	msg, err := s.ms.GetMessage(id, u)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +231,7 @@ func (s *service) run() {
 }
 
 func (s *service) send(id ulid.ULID) {
-	msg, err := s.Get(id)
+	msg, err := s.GetMessageByID(id)
 	if err != nil {
 		log.Printf("Error: could not get message %s, %v", id, err)
 		return
@@ -248,7 +258,7 @@ func (s *service) send(id ulid.ULID) {
 		}
 
 		// send http error through pigeon-htpp
-		err := s.sendCallbackHTTPMessage(msg.SubjectID, "could not deliver message")
+		err := s.sendCallbackHTTPMessage(msg.SubjectID, "could not deliver message", msg.UserID)
 		if err != nil {
 			// TODO(ca): check this error
 			log.Printf("Error: could not send callback http message %v", err)
@@ -269,7 +279,7 @@ func (s *service) send(id ulid.ULID) {
 		}
 
 		// send http error through pigeon-htpp
-		err := s.sendCallbackHTTPMessage(msg.SubjectID, "failed to deliver message")
+		err := s.sendCallbackHTTPMessage(msg.SubjectID, "failed to deliver message", msg.UserID)
 		if err != nil {
 			// TODO(ca): check this error
 			log.Printf("Error: could not send callback http message %v", err)
@@ -286,7 +296,7 @@ func (s *service) send(id ulid.ULID) {
 	}
 }
 
-func (s *service) sendCallbackHTTPMessage(subjectID string, messageError string) error {
+func (s *service) sendCallbackHTTPMessage(subjectID, messageError, userID string) error {
 	id, err := generateID(0)
 	if err != nil {
 		return err
@@ -302,7 +312,7 @@ func (s *service) sendCallbackHTTPMessage(subjectID string, messageError string)
 	}
 
 	// TODO(ca): use callback_post_url as a new HTTP message
-	err = s.Put(*id, c, pigeon.ServicePigeonHTTP, pigeon.StatusPending, subjectID)
+	err = s.Put(*id, c, pigeon.ServicePigeonHTTP, pigeon.StatusPending, subjectID, userID)
 	if err != nil {
 		return err
 	}

@@ -8,7 +8,7 @@ import (
 
 // SubjectStore ...
 type SubjectStore struct {
-	*Datastore
+	Dst *Datastore
 }
 
 // GetSubjects ...

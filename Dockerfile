@@ -15,9 +15,11 @@ FROM golang:alpine
 COPY /bin/scheduler /
 COPY config.yml /
 COPY data.json /
+COPY wait-for-arango.sh /
+
+RUN apk --no-cache add -U curl
+
 WORKDIR /
 ENV REDIS_URL redis:6379
 EXPOSE 9000
 EXPOSE 9001
-
-CMD ["./scheduler"]

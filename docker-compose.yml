@@ -4,15 +4,24 @@ services:
   redis:
     image: redis
 
+  arango:
+    image: arangodb:latest
+    ports:
+      - 8529:8529
+    environment:
+      ARANGO_NO_AUTH: 1
+
   pigeon:
     build: .
     links:
+      - arango
       - redis
     ports:
       - 80:9000
       - 9001:9001
     depends_on:
       - pigeon-mqtt
+    command: ["./wait-for-arango.sh", "./scheduler"]
 
   pigeon-mqtt:
     build: ../pigeon-mqtt

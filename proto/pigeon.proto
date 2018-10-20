@@ -8,6 +8,7 @@ message Message {
     string endpoint = 3;
     string status = 4;
     string subject_id = 5;
+    string user_id = 6;
 }
 
 message Error {
@@ -49,6 +50,7 @@ message PutRequest {
     bytes content   = 2;
     string endpoint = 3;
     string subject_id = 4;
+    string user_id = 5;
 }
 
 message PutResponse {
@@ -65,6 +67,7 @@ message CancelResponse {
 
 message GetRequest {
     string id = 1;
+    string user_id = 2;
 }
 
 message GetResponse {
