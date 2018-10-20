@@ -10,4 +10,5 @@ sleep 1
 done
 
 >&2 echo "\nArango is up - executing command"
+sleep 2
 exec $cmd
