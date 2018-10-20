@@ -61,13 +61,10 @@ func NewDatastore(path string, conn arango.Connection) (*Datastore, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("connection arango")
-	fmt.Println(cl)
 
 	ctx := context.Background()
 	found, err := cl.DatabaseExists(ctx, pigeonDB)
 	if err != nil {
-		fmt.Println("88888888")
 		fmt.Println(err)
 		return nil, err
 	}
@@ -77,7 +74,6 @@ func NewDatastore(path string, conn arango.Connection) (*Datastore, error) {
 		opt := new(arango.CreateDatabaseOptions)
 		pdb, err = cl.CreateDatabase(ctx, pigeonDB, opt)
 		if err != nil {
-			fmt.Println("333333")
 			return nil, err
 		}
 		return &Datastore{
@@ -89,11 +85,9 @@ func NewDatastore(path string, conn arango.Connection) (*Datastore, error) {
 	}
 	pdb, err = cl.Database(ctx, pigeonDB)
 	if err != nil {
-		fmt.Println("444444444")
 		return nil, err
 	}
 
-	fmt.Println("5555555555")
 	return &Datastore{
 		DB:           db,
 		ArangoClient: cl,
