@@ -133,15 +133,18 @@ type getMessageByIDContext struct {
 // GET /api/v1/messages/:id/status
 // POST /api/v1/messages/:id/cancel
 //
-func NewHTTPServer(database *db.Datastore) *http.Server {
+func NewHTTPServer(datastore *db.Datastore) *http.Server {
 	router := httprouter.New()
 
 	// stores
-	ss := &db.SubjectStore{database}
-	us := &db.UserStore{database}
-	cs := &db.ChannelStore{database}
-	ms := &db.MessageStore{database}
-	ts := &db.CriteriaStore{database}
+	ss := &db.SubjectStore{datastore}
+	us := &db.UserStore{datastore}
+	cs := &db.ChannelStore{datastore}
+	ts := &db.CriteriaStore{datastore}
+	ms, err := db.NewMessageStore(datastore)
+	if err != nil {
+		panic(err)
+	}
 
 	router.GET("/api/v1/subjects", getSubjectsHTTPHandler(getSubjectsContext{SubjectStore: ss, UserStore: us, ChannelStore: cs}))
 	router.GET("/api/v1/messages/:id", getMessageByIDHTTPHandler(getMessageByIDContext{UserStore: us, SubjectStore: ss, MessageStore: ms}))
