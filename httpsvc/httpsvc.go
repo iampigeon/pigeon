@@ -32,15 +32,6 @@ const (
 
 	// TODO: check this
 	APIKey = "12345"
-
-	//endpoints
-	pigeonMQTTEndpoint = "pigeon-mqtt:9010"
-	pigeonHTTPEndpoint = "pigeon-mqtt:9020"
-
-	//services names
-	pigeonMQTT    = "mqtt"
-	pigeonSMS     = "sms"
-	pigeonWebhook = "webhook"
 )
 
 // Subject ...
@@ -363,7 +354,7 @@ func postMessageHTTPHandler(ctx postMessageContext) func(w http.ResponseWriter, 
 			}
 
 			// prepare and send pigeon-mqtt message
-			if channelName == pigeonMQTT {
+			if channelName == pigeon.ServicePigeonMQTT {
 				// define mqtt content
 				var mqttContent *pigeon.MQTTContent
 
@@ -410,7 +401,7 @@ func postMessageHTTPHandler(ctx postMessageContext) func(w http.ResponseWriter, 
 				}
 
 				// 	Send MQTT message
-				id, err := sendMessage(client, string(content), pigeonMQTTEndpoint, subject.ID, criteriaDelay)
+				id, err := sendMessage(client, string(content), pigeon.EndpointMQTT, subject.ID, criteriaDelay)
 				if err != nil {
 					response.Error = err.Error()
 				} else {
@@ -420,8 +411,8 @@ func postMessageHTTPHandler(ctx postMessageContext) func(w http.ResponseWriter, 
 
 				messagesResponses.Messages = append(messagesResponses.Messages, *response)
 
-				// prepare and send pigeon-webhook message
-			} else if channelName == pigeonWebhook {
+				// prepare and send pigeon-http message
+			} else if channelName == pigeon.ServicePigeonHTTP {
 				// define http content
 				var httpContent *pigeon.HTTPContent
 
@@ -468,8 +459,8 @@ func postMessageHTTPHandler(ctx postMessageContext) func(w http.ResponseWriter, 
 					continue
 				}
 
-				// 	Send MQTT message
-				id, err := sendMessage(client, string(content), pigeonHTTPEndpoint, subject.ID, criteriaDelay)
+				// 	Send HTTP message
+				id, err := sendMessage(client, string(content), pigeon.EndpointHTTP, subject.ID, criteriaDelay)
 				if err != nil {
 					response.Error = err.Error()
 				} else {

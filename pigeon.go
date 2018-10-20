@@ -22,6 +22,18 @@ const (
 	StatusCrashedDeliver = "crashed-deliver"
 	// StatusCancelled ...
 	StatusCancelled = "cancelled"
+
+	// EndpointMQTT ...
+	EndpointMQTT = "pigeon-mqtt:9010"
+	// EndpointHTTP ...
+	EndpointHTTP = "pigeon-http:9020"
+
+	// ServicePigeonMQTT ...
+	ServicePigeonMQTT = "mqtt"
+	// ServicePigeonSMS ...
+	ServicePigeonSMS = "sms"
+	// ServicePigeonHTTP ...
+	ServicePigeonHTTP = "http"
 )
 
 // NetAddr is the network address of the Backend service where to validate and
@@ -131,7 +143,7 @@ type MQTT struct {
 type HTTP struct {
 	URL     *url.URL               `json:"url"`
 	Body    string                 `json:"body,omitempty"`
-	Headers map[string]interface{} `json:"headers"`
+	Headers map[string]interface{} `json:"headers,omitempty"`
 }
 
 // HTTPContent ...
@@ -142,7 +154,7 @@ type HTTPContent struct {
 // HTTPOptions ...
 type HTTPOptions struct {
 	URL     *url.URL               `json:"url"`
-	Headers map[string]interface{} `json:"headers"`
+	Headers map[string]interface{} `json:"headers,omitempty"`
 }
 
 // TODO: move to respective pigeon repository and get from package
@@ -188,4 +200,11 @@ type Mock struct {
 	Criterias []*Criteria `json:"criterias"`
 	// SubjectsChannels []*SubjectsChannels `json:"subjects_channels"`
 	//Messages         []*Message          `json:"messages"`
+}
+
+// Response ...
+type Response struct {
+	Data  interface{} `json:"data,omitempty"`
+	Meta  interface{} `json:"meta,omitempty"`
+	Error interface{} `json:"error,omitempty"`
 }

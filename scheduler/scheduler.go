@@ -2,7 +2,9 @@ package scheduler
 
 import (
 	"context"
+	"encoding/json"
 	"log"
+	"math/rand"
 	"net"
 	"time"
 
@@ -81,13 +83,27 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 			return e
 		}
 
+		// send http error through pigeon-htpp
+		err := s.sendCallbackHTTPMessage(subjectID, "could not deliver message")
+		if err != nil {
+			// TODO(ca): check this error
+			log.Printf("Error: could not send callback http message %v", err)
+			return err
+		}
+
 		return err
 	}
 	if !resp.Valid {
 		// update status to failed-approve
-		e := s.ms.UpdateStatus(id, pigeon.StatusFailedApprove)
-		if e != nil {
-			return e
+		err := s.ms.UpdateStatus(id, pigeon.StatusFailedApprove)
+		if err != nil {
+			return err
+		}
+
+		// send http error through pigeon-htpp
+		err = s.sendCallbackHTTPMessage(subjectID, "could not deliver message")
+		if err != nil {
+			return err
 		}
 
 		if resp.Error != nil {
@@ -143,7 +159,7 @@ func (s *service) Cancel(id ulid.ULID) error {
 		return nil
 	}
 
-	err = s.ms.UpdateStatus(id, pigeon.StatusCancelledDeliver)
+	err = s.ms.UpdateStatus(id, pigeon.StatusCancelled)
 	if err != nil {
 		return err
 	}
@@ -220,7 +236,6 @@ func (s *service) send(id ulid.ULID) {
 	defer conn.Close()
 
 	client := pb.NewBackendServiceClient(conn)
-	// TODO(ja): handle cancellation.
 	resp, err := client.Deliver(context.Background(), &pb.DeliverRequest{Content: msg.Content})
 	if err != nil {
 		log.Printf("Error: could not deliver message %s, %v", msg.ID, err)
@@ -232,6 +247,14 @@ func (s *service) send(id ulid.ULID) {
 			return
 		}
 
+		// send http error through pigeon-htpp
+		err := s.sendCallbackHTTPMessage(msg.SubjectID, "could not deliver message")
+		if err != nil {
+			// TODO(ca): check this error
+			log.Printf("Error: could not send callback http message %v", err)
+			return
+		}
+
 		return
 	}
 	if resp.Error != nil {
@@ -240,7 +263,16 @@ func (s *service) send(id ulid.ULID) {
 		// update status to failed-deliver
 		e := s.ms.UpdateStatus(id, pigeon.StatusFailedDeliver)
 		if e != nil {
+			// TODO(ca): check this error
 			log.Printf("Error: could not update message status %s, %v", msg.ID, err)
+			return
+		}
+
+		// send http error through pigeon-htpp
+		err := s.sendCallbackHTTPMessage(msg.SubjectID, "failed to deliver message")
+		if err != nil {
+			// TODO(ca): check this error
+			log.Printf("Error: could not send callback http message %v", err)
 			return
 		}
 
@@ -252,6 +284,46 @@ func (s *service) send(id ulid.ULID) {
 		log.Printf("Error: could not update message status %s, %v", msg.ID, err)
 		return
 	}
+}
 
-	// TODO(ca): send Put Message with 'callback_post_url' message to pigeon-http
+func (s *service) sendCallbackHTTPMessage(subjectID string, messageError string) error {
+	id, err := generateID(0)
+	if err != nil {
+		return err
+	}
+
+	body := pigeon.Response{
+		Error: messageError,
+	}
+
+	c, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+
+	// TODO(ca): use callback_post_url as a new HTTP message
+	err = s.Put(*id, c, pigeon.ServicePigeonHTTP, pigeon.StatusPending, subjectID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TODO(ca): move this to other site.
+func generateID(criteriaDelay time.Duration) (*ulid.ULID, error) {
+	delay := criteriaDelay
+
+	entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
+	id, err := ulid.New(
+		ulid.Timestamp(time.Now().Add(delay)),
+		entropy,
+	)
+	if err != nil {
+		//TODO: move this message
+		log.Println("Failed to create message id, %v", err)
+		return nil, err
+	}
+
+	return &id, nil
 }
