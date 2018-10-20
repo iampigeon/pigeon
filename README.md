@@ -367,11 +367,10 @@ Define relations of subjects and channels
 - [ ] Implement interface for any model (mt)
 - [ ] Return Subject when has create (ca)
 - [ ] Implement JWT in any request (ca)
-- [M] Implement arangodb on any model (key-value for now) (mt)
 - [ ] Implement test for check endpoint (mt)
 - [ ] Remove 'Endpoint' value from Message model (ca)
 - [X] Implement GET /messages/:id. (http, rcp, scheduler, message model, priority queue) (ca)
-- [X] Fix error on Pop method (scrips.go:22, scheduler.go:192) when pop element and there is none in the queue (ca)
+- [X] Fix error on Pop method (scripts.go:22, scheduler.go:192) when pop element and there is none in the queue (ca)
 - [X] Deploy in EC2 Server (ca)
 - [X] Configure Domain api.iampigeon.com (ca)
 - [ ] Configure HTTPS domain (ca)
@@ -389,6 +388,14 @@ Define relations of subjects and channels
 - [ ] Refactor httpsvc.go (ca)
 - [ ] Add retry support to fails crashed (ca)
 - [ ] Use callback_post_url as a new message (ca)
+- [ ] Update README with new implemented endpoints (mt)
+- [X] Implement message collection (and its methods) on arangodb (mt)
+- [ ] Solve arangodb-wait issue on pigeon (ca)
+- [ ] Migrate Subjects and Subject channels to arangodb (mt)
+- [ ] Add User collection to arangodb (ca)
+- [ ] Research arangodb for array inside of document (mt-ca)
+- [ ] Implement iampigeon.com dashboard (mt-ca)
+- [ ] Add api generation (mt-ca)
 
 ```json
 {
