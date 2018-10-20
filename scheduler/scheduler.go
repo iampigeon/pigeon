@@ -83,7 +83,7 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 			return e
 		}
 
-		// send http error via pigeon-htpp
+		// send http error through pigeon-htpp
 		err := s.sendCallbackHTTPMessage(subjectID, "could not deliver message")
 		if err != nil {
 			// TODO(ca): check this error
@@ -95,13 +95,13 @@ func (s *service) Put(id ulid.ULID, content []byte, endpoint pigeon.NetAddr, sta
 	}
 	if !resp.Valid {
 		// update status to failed-approve
-		e := s.ms.UpdateStatus(id, pigeon.StatusFailedApprove)
-		if e != nil {
-			return e
+		err := s.ms.UpdateStatus(id, pigeon.StatusFailedApprove)
+		if err != nil {
+			return err
 		}
 
-		// send http error via pigeon-htpp
-		err := s.sendCallbackHTTPMessage(subjectID, "could not deliver message")
+		// send http error through pigeon-htpp
+		err = s.sendCallbackHTTPMessage(subjectID, "could not deliver message")
 		if err != nil {
 			return err
 		}
@@ -247,7 +247,7 @@ func (s *service) send(id ulid.ULID) {
 			return
 		}
 
-		// send http error via pigeon-htpp
+		// send http error through pigeon-htpp
 		err := s.sendCallbackHTTPMessage(msg.SubjectID, "could not deliver message")
 		if err != nil {
 			// TODO(ca): check this error
@@ -268,7 +268,7 @@ func (s *service) send(id ulid.ULID) {
 			return
 		}
 
-		// send http error via pigeon-htpp
+		// send http error through pigeon-htpp
 		err := s.sendCallbackHTTPMessage(msg.SubjectID, "failed to deliver message")
 		if err != nil {
 			// TODO(ca): check this error
