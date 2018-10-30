@@ -1,0 +1,108 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Pigeon",
+		"_postman_id": "1cc32e9e-d6bc-5e4a-064a-a4288b8f2a35",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Deliver message",
+			"request": {
+				"url": "http://localhost:9000/api/v1/messages",
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Api-Key",
+						"value": "12345",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"message\": {\n\t\t\"subject_name\": \"max-air-temperature\",\n\t\t\"channels\": {\n\t\t\t\"mqtt\": {\n\t\t\t  \"mqtt_payload\": {\n\t\t\t    \"foo\": \"bar\",\n\t\t\t    \"baz\": \"zar\"\n\t\t\t  }\n\t\t\t},\n\t\t\t\"sms\": {\n\t\t\t  \"phone\": \"2423545353\"\n\t\t\t},\n\t\t\t\"lala\": {},\n\t\t\t\"pepe\": {},\n\t\t}\n\t}\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get subjects",
+			"request": {
+				"url": "http://52.37.28.229/api/v1/subjects",
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Api-Key",
+						"value": "abcde",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get message status",
+			"request": {
+				"url": "http://localhost:9000/api/v1/messages/01CSFZD1Q25C5J9AKFZT7DZSSE/status",
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Api-Key",
+						"value": "12345",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"message\": {\n    \"subject_name\": \"max-air-temperature\",\n    \"mqtt\": {\n      \"mqtt_topic\": \"/some-mqtt-topic\",\n      \"mqtt_payload\": {\n        \"foo\": \"bar\",\n        \"baz\": \"zar\"\n      }\n    }\n  }\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel message",
+			"request": {
+				"url": "http://localhost:9000/api/v1/messages/01CST1AA973Y8PVZC8ACR6MCGX/cancel",
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Api-Key",
+						"value": "12345",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"message\": {\n    \"subject_name\": \"max-air-temperature\",\n    \"mqtt\": {\n      \"mqtt_topic\": \"/some-mqtt-topic\",\n      \"mqtt_payload\": {\n        \"foo\": \"bar\",\n        \"baz\": \"zar\"\n      }\n    }\n  }\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get message by id",
+			"request": {
+				"url": "http://api.iampigeon.com/api/v1/messages/01CT93KGAAE9WAD1HNS0427G4M/status",
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-Api-Key",
+						"value": "12345",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"message\": {\n    \"subject_name\": \"max-air-temperature\",\n    \"mqtt\": {\n      \"mqtt_topic\": \"/some-mqtt-topic\",\n      \"mqtt_payload\": {\n        \"foo\": \"bar\",\n        \"baz\": \"zar\"\n      }\n    }\n  }\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
