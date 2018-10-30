@@ -17,7 +17,7 @@ services:
       - arango
       - redis
     ports:
-      - 9000:9000
+      - 80:9000
       - 9001:9001
     depends_on:
       - pigeon-mqtt
