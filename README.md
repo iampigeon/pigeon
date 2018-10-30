@@ -4,6 +4,12 @@ Central notification service FTW.
 
 ## HTTP
 
+`GET /api/v1/subject`
+`POST /api/v1/messages`
+`GET /api/v1/messages/:id`
+`GET /api/v1/messages/:id/status`
+`POST /api/v1/messages/:id/cancel`
+
 ## GET Subjects
 ```
   GET /api/v1/subjects
@@ -86,6 +92,68 @@ Central notification service FTW.
       "error": "internal server error",
       "channel": "mandrill"
     }]
+  }
+}
+```
+
+## Get message by id
+```
+  GET /api/v1/messages/:id
+```
+
+### Headers
+| Name | Type | Description |
+|-|-|-|-|
+|X-Api-Key|string|user api key|
+
+### Response
+```Json
+{
+  "data": {
+    "message": {
+      "id": "01CV175QVR1VP7TY4QXHJBMVZ2",
+      "content": "eyJtcXR0X3RvcGljIjoiL3NvbWUtbXF0dC10b3BpYyIsIm1xdHRfcGF5bG9hZCI6eyJiYXoiOiJ6YXIiLCJmb28iOiJiYXIifX0=",
+      "status": "pending",
+      "subject_id": "s1"
+    }
+  }
+}
+```
+
+## Get message status
+```
+  GET /api/v1/messages/:id/status
+```
+
+### Headers
+| Name | Type | Description |
+|-|-|-|-|
+|X-Api-Key|string|user api key|
+
+### Response
+```Json
+{
+  "data": {
+    "status": "sent"
+  }
+}
+```
+
+## Cancel message
+```
+  POST /api/v1/messages/:id/cancel
+```
+
+### Headers
+| Name | Type | Description |
+|-|-|-|-|
+|X-Api-Key|string|user api key|
+
+### Response
+```Json
+{
+  "data": {
+    "status": "cancelled"
   }
 }
 ```
@@ -388,7 +456,7 @@ Define relations of subjects and channels
 - [ ] Refactor httpsvc.go (ca)
 - [ ] Add retry support to fails crashed (ca)
 - [ ] Use callback_post_url as a new message (ca)
-- [ ] Update README with new implemented endpoints (mt)
+- [X] Update README with new implemented endpoints (ca)
 - [X] Implement message collection (and its methods) on arangodb (mt)
 - [ ] Solve arangodb-wait issue on pigeon (ca)
 - [ ] Migrate Subjects and Subject channels to arangodb (mt)
