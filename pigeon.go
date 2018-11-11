@@ -103,21 +103,21 @@ type Backend interface {
 
 // Subject ...
 type Subject struct {
-	ID       string            `json:"id"`
-	UserID   string            `json:"user_id"`
-	Name     string            `json:"name"`
-	Channels []*SubjectChannel `json:"channels"`
+	ID       string            `json:"id", arango:"id"`
+	UserID   string            `json:"user_id", arango:"user_id"`
+	Name     string            `json:"name", arango:"name"`
+	Channels []*SubjectChannel `json:"channels", arango:""` // ACA QUEDAMOS
 
 	User *User `json:"-"`
 }
 
 // SubjectChannel ...
 type SubjectChannel struct {
-	ID             string `json:"id"`
-	ChannelID      string `json:"channel_id"`
-	Options        map[string]interface{}
-	CriteriaID     string `json:"criteria_id"`
-	CriteriaCustom int64  `json:"criteria_custom"`
+	ID             string                 `json:"id"`
+	ChannelID      string                 `json:"channel_id"`
+	CriteriaID     string                 `json:"criteria_id"`
+	CriteriaCustom int64                  `json:"criteria_custom"`
+	Options        map[string]interface{} `json:"options"`
 
 	Channel  *Channel  `json:"-"`
 	Criteria *Criteria `json:"-"`

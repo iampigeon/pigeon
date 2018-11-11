@@ -34,17 +34,6 @@ const (
 	APIKey = "12345"
 )
 
-// Subject ...
-type Subject struct {
-	Name     string   `json:"name"`
-	Channels []string `json:"channels"`
-}
-
-// SubjectsResponse ...
-type SubjectsResponse struct {
-	Subjects []*Subject `json:"subjects"`
-}
-
 // Response ...
 type Response struct {
 	Data interface{} `json:"data,omitempty"`
@@ -94,12 +83,6 @@ type MessageResponse struct {
 	Error   string `json:"error,omitempty"`
 }
 
-type getSubjectsContext struct {
-	SubjectStore *db.SubjectStore
-	UserStore    *db.UserStore
-	ChannelStore *db.ChannelStore
-}
-
 type getMessageStatusContext struct {
 	MessageStore *db.MessageStore
 	UserStore    *db.UserStore
@@ -146,11 +129,15 @@ func NewHTTPServer(datastore *db.Datastore) *http.Server {
 		panic(err)
 	}
 
-	router.GET("/api/v1/subjects", getSubjectsHTTPHandler(getSubjectsContext{SubjectStore: ss, UserStore: us, ChannelStore: cs}))
+	// messages endpoints
 	router.GET("/api/v1/messages/:id", getMessageByIDHTTPHandler(getMessageByIDContext{UserStore: us, SubjectStore: ss, MessageStore: ms}))
 	router.POST("/api/v1/messages", postMessageHTTPHandler(postMessageContext{UserStore: us, SubjectStore: ss, ChannelStore: cs, CriteriaStore: ts}))
 	router.GET("/api/v1/messages/:id/status", getStatusMessageHTTPHandler(getMessageStatusContext{MessageStore: ms, UserStore: us}))
 	router.POST("/api/v1/messages/:id/cancel", postCancelMessageHTTPHandler(postCancelMessageContext{MessageStore: ms, UserStore: us, SubjectStore: ss}))
+
+	// subjects endpoints
+	router.GET("/api/v1/subjects", getSubjectsHTTPHandler(getSubjectsContext{SubjectStore: ss, UserStore: us, ChannelStore: cs}))
+	router.POST("/api/v1/subjects", postCreateSubjectHTTPHandler(postCreateSubjectContext{UserStore: us}))
 
 	addr := fmt.Sprintf(":%d", httpPort)
 	routes := negroni.Wrap(router)
@@ -158,62 +145,6 @@ func NewHTTPServer(datastore *db.Datastore) *http.Server {
 	server := &http.Server{Addr: addr, Handler: n}
 
 	return server
-}
-
-func getSubjectsHTTPHandler(ctx getSubjectsContext) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	return func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		w.Header().Set("Content-Type", "application/json")
-
-		// get api key from header
-		apiKey := r.Header.Get("X-Api-Key")
-
-		// get user by api key
-		user, err := ctx.UserStore.GetUserByAPIKey(apiKey)
-		if err != nil {
-			getLogger(r).Error(err)
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
-		}
-
-		// define http response
-		subjectsResponse := new(SubjectsResponse)
-		subjectsResponse.Subjects = make([]*Subject, 0)
-
-		// get user subjects
-		subjects, err := ctx.SubjectStore.GetSubjectsByUserID(user.ID)
-		if err != nil {
-			getLogger(r).Error(err)
-			http.Error(w, err.Error(), http.StatusUnauthorized)
-			return
-		}
-
-		for _, subject := range subjects {
-			s := new(Subject)
-			s.Name = subject.Name
-			s.Channels = make([]string, 0)
-
-			// get channels
-			for _, channel := range subject.Channels {
-				c, e := ctx.ChannelStore.GetChannelById(channel.ChannelID)
-				if e != nil {
-					getLogger(r).Error(e)
-				} else {
-					s.Channels = append(s.Channels, c.Name)
-				}
-			}
-
-			subjectsResponse.Subjects = append(subjectsResponse.Subjects, s)
-		}
-
-		response := new(Response)
-		response.Data = subjectsResponse
-
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			getLogger(r).Error(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
 }
 
 func getMessageByIDHTTPHandler(ctx getMessageByIDContext) func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
