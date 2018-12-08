@@ -67,6 +67,11 @@ Central notification service FTW.
         "html": "some-html",
         "text": "some-text",
       },
+      "push": {
+        "tokens": ["some-token-a", "some-token-b"],
+        "title": "some-message-title",
+        "body": "some-message-text",
+      }
     }
   }
 }
