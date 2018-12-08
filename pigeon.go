@@ -159,18 +159,28 @@ type HTTPOptions struct {
 	Headers map[string]interface{} `json:"headers,omitempty"`
 }
 
-// TODO: move to respective pigeon repository and get from package
 // SMS ...
 type SMS struct {
 	Phone string `json:"phone"`
 	Text  string `json:"text"`
 }
 
-// TODO: move to respective pigeon repository and get from package
 // Push ...
 type Push struct {
-	DeviceID string `json:"device_id"`
+	Title string `json:"title"`
+	Body  string `json:"body"`
+	Token string `json:"token"`
 }
+
+// PushContent ...
+type PushContent struct {
+	Title string `json:"title"`
+	Body  string `json:"body"`
+	Token string `json:"token"`
+}
+
+// PushOptions ...
+type PushOptions struct{}
 
 // Channel ...
 type Channel struct {
