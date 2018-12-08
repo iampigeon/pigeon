@@ -113,11 +113,11 @@ type Subject struct {
 
 // SubjectChannel ...
 type SubjectChannel struct {
-	ID             string `json:"id"`
-	ChannelID      string `json:"channel_id"`
-	Options        map[string]interface{}
-	CriteriaID     string `json:"criteria_id"`
-	CriteriaCustom int64  `json:"criteria_custom"`
+	ID             string                 `json:"id"`
+	ChannelID      string                 `json:"channel_id"`
+	Options        map[string]interface{} `json:"options"`
+	CriteriaID     string                 `json:"criteria_id"`
+	CriteriaCustom int64                  `json:"criteria_custom"`
 
 	Channel  *Channel  `json:"-"`
 	Criteria *Criteria `json:"-"`
@@ -166,11 +166,22 @@ type SMS struct {
 	Text  string `json:"text"`
 }
 
-// TODO: move to respective pigeon repository and get from package
 // Push ...
 type Push struct {
-	DeviceID string `json:"device_id"`
+	Title string `json:"title"`
+	Body  string `json:"body"`
+	Token string `json:"token"`
 }
+
+// PushContent ...
+type PushContent struct {
+	Title string `json:"title"`
+	Body  string `json:"body"`
+	Token string `json:"token"`
+}
+
+// PushOptions ...
+type PushOptions struct{}
 
 // Channel ...
 type Channel struct {
